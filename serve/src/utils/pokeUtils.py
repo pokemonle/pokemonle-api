@@ -151,6 +151,8 @@ def EvolutionGet(Info):
         if(Evolution["name"]==Info["name"]):
             own=Evolution
             break
+    if(own["stage"]=="不进化" or own["stage"]=="未进化" or own["stage"]=="幼年"):
+        own["stage"]="未进化/不进化"
     return own["stage"],own["text"]
 
 def APTypeGet(Info):

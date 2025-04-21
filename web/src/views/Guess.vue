@@ -17,9 +17,11 @@
                 title="设置"
                 :visible.sync="settingVisble"
                 width="30%"
-                :show-close=false>
+                :show-close="false"
+                :close-on-click-modal="false"
+                :close-on-press-escape="false">
                 <div class="setting">
-                    模式：<el-select v-model="hardid" placeholder="请选择" size="small" style="width: 50%">
+                    模式：<el-select v-model="settings.hardid" placeholder="请选择" size="small" style="width: 50%">
                         <el-option
                         v-for="item in this.hards"
                         :key="item"
@@ -29,7 +31,7 @@
                         </el-option>
                     </el-select>
                     <br>
-                    世代：<el-select v-model="genid" placeholder="请选择" size="small" style="width: 50%"
+                    世代：<el-select v-model="settings.genid" placeholder="请选择" size="small" style="width: 50%"
                         @change="ReloadGuessNumber()">
                         <el-option
                         v-for="item in this.gens"
@@ -41,35 +43,35 @@
                     </el-select>
                     <br>
                     <el-switch
-                    v-model="battleOpen"
+                    v-model="settings.battleOpen"
                     active-text="显示更多种族值信息"
                     @change="ReloadGuessNumber()">
                     </el-switch>
                     <el-switch
-                    v-model="shapeOpen"
+                    v-model="settings.shapeOpen"
                     active-text="显示更多外形信息"
                     @change="ReloadGuessNumber()">
                     </el-switch>
                     <el-switch
-                    v-model="catchOpen"
+                    v-model="settings.catchOpen"
                     active-text="显示蛋组/捕获率信息"
                     @change="ReloadGuessNumber()">
                     </el-switch>
                     <br>
                     <el-switch
-                    v-model="autodif"
+                    v-model="settings.autodif"
                     active-text="自动调整"
                     inactive-text="手动调整"
                     @change="ReloadGuessNumber()">
                     </el-switch>
                     <div class="block">
-                        <span class="demonstration">猜测次数：{{this.maxguess}}</span>
+                        <span class="demonstration">猜测次数：{{this.settings.maxguess}}</span>
                         <el-slider
-                        v-model="maxguess"
+                        v-model="settings.maxguess"
                         :step="1"
                         :max="12"
                         :min="2"
-                        :disabled="this.autodif"
+                        :disabled="this.settings.autodif"
                         style="width: 100%">
                         </el-slider>
                     </div>
@@ -137,7 +139,7 @@
                     <el-col :span="12"><div class="grid-content bg-purple-light">bbb</div></el-col> -->
                 </el-row>
                 <div class="times">
-                    猜测次数：{{this.times}}/{{this.maxguess}}
+                    猜测次数：{{this.times}}/{{this.settings.maxguess}}
                 </div>
                 <el-table
                 :data="tableData"
@@ -170,7 +172,7 @@
                     label="外形"
                     min-width="100"
                     align="center"
-                    v-if="shapeOpen">
+                    v-if="settings.shapeOpen">
                         <template slot-scope="scope">
                             <el-tag style="font-size: 17px" :type="scope.row.shape.col">
                                 {{ scope.row.shape.key }}
@@ -202,13 +204,13 @@
                             <el-tag style="font-size: 17px" :type="scope.row.pow.col">
                                 {{ ValueText(scope.row.pow.key,scope.row.pow.value) }}
                             </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.speed.col" v-if="battleOpen">
+                            <el-tag style="font-size: 17px" :type="scope.row.speed.col" v-if="settings.battleOpen">
                                 速度:{{ ValueText(scope.row.speed.key,scope.row.speed.value) }}
                             </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.attack.col" v-if="battleOpen">
+                            <el-tag style="font-size: 17px" :type="scope.row.attack.col" v-if="settings.battleOpen">
                                 {{ scope.row.attack.key }}
                             </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.defense.col" v-if="battleOpen">
+                            <el-tag style="font-size: 17px" :type="scope.row.defense.col" v-if="settings.battleOpen">
                                 {{ scope.row.defense.key }}
                             </el-tag>
                         </template>
@@ -256,7 +258,7 @@
                     label="蛋组/捕获率"
                     min-width="120"
                     align="center"
-                    v-if="catchOpen">
+                    v-if="settings.catchOpen">
                         <template slot-scope="scope">
                             <a v-for="item in scope.row.egg">
                                 <el-tag style="font-size: 17px" :type="item.col">
@@ -312,14 +314,16 @@
                 settingVisble:false,
                 introVisble:false,
                 gens:["全世代","第一世代","第二世代","第三世代","第四世代","第五世代","第六世代","第七世代","第八世代","第九世代"],
-                genid:"全世代",
                 hards:["普通模式","简单模式"],
-                hardid:"普通模式",
-                maxguess:10,
-                autodif:true,
-                battleOpen:false,
-                shapeOpen:false,
-                catchOpen:false,
+                settings:{
+                    genid:"全世代",
+                    hardid:"普通模式",
+                    maxguess:10,
+                    autodif:true,
+                    battleOpen:false,
+                    shapeOpen:false,
+                    catchOpen:false,
+                },
             }
         },
         methods:{
@@ -385,8 +389,8 @@
                 this.tableData=[]
                 console.log(`${process.env.VUE_APP_API_BASE_URL}/initget`)
                 try{
-                    const gen=this.gens.indexOf(this.genid)
-                    const dif=this.hards.indexOf(this.hardid)
+                    const gen=this.gens.indexOf(this.settings.genid)
+                    const dif=this.hards.indexOf(this.settings.hardid)
                     const options = {
                         method: 'GET',
                         url: `${process.env.VUE_APP_API_BASE_URL}/initget`,
@@ -597,7 +601,7 @@
                         this.times++;
 
                         // 猜测结束
-                        if(this.temp.answer=='True'||this.times==this.maxguess){
+                        if(this.temp.answer=='True'||this.times==this.settings.maxguess){
                             this.gameover=true
                             this.ReplayAnswer()
                         }
@@ -702,30 +706,49 @@
                 }
             },
             CloseSetting(){
+                this.saveSettings();
                 this.settingVisble=false;
                 this.Restart();
             },
             ReloadGuessNumber(newvalue){
-                if(this.autodif==false)return true;
-                this.maxguess=10;
-                var x=this.battleOpen*2+this.shapeOpen*2+this.catchOpen;
-                if(this.genid!="全世代")this.maxguess-=3,x+=(x<=3);
-                if(x==1&&this.catchOpen)x++;
-                if(x==2&&this.battleOpen)x++;
+                if(this.settings.autodif==false)return true;
+                this.settings.maxguess=10;
+                var x=this.settings.battleOpen*2+this.settings.shapeOpen*2+this.settings.catchOpen;
+                if(this.settings.genid!="全世代")this.settings.maxguess-=3,x+=(x<=3);
+                if(x==1&&this.settings.catchOpen)x++;
+                if(x==2&&this.settings.battleOpen)x++;
                 else if(x>=3)x++;
-                if(x>=6)this.maxguess-=1;
-                if(x>=5)this.maxguess-=1;
-                if(x>=4)this.maxguess-=1;
-                if(x>=3)this.maxguess-=1;
-                if(x>=2)this.maxguess-=1;
+                if(x>=6)this.settings.maxguess-=1;
+                if(x>=5)this.settings.maxguess-=1;
+                if(x>=4)this.settings.maxguess-=1;
+                if(x>=3)this.settings.maxguess-=1;
+                if(x>=2)this.settings.maxguess-=1;
                 return true;
+            },
+            saveSettings(){
+                console.log("保存设置中")
+                try{
+                    localStorage.setItem('guessSettings',JSON.stringify(this.settings));
+                }catch(e){
+                    console.error("设置保存失败：",e);
+                }
+            },
+            loadSettings(){
+                try{
+                    const savedSettings=localStorage.getItem("guessSettings");
+                    if(savedSettings){
+                        this.settings=JSON.parse(savedSettings);
+                    }
+                }catch(e){
+                    console.error("设置加载失败：",e);
+                }
             }
         },
         computed:{
         },
         mounted() {
-            this.nameList=this.loadName();
-            this.Restart()
+            this.loadSettings();
+            this.Restart();
         }
     }
 </script>
