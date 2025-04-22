@@ -701,6 +701,7 @@
                     return String(key)+"↓"
                 return String(key)
             },
+            // 修改 ReplayAnswer 方法
             async ReplayAnswer(){
                 const answer=sessionStorage.getItem('answer')
                 if(answer==null)return;
@@ -758,34 +759,78 @@
                     if(this.reply.label=="")
                         this.reply.label="无"
 
+                    // 提取世代号，避免重复
+                    let genNumber = data.gen.key;
+                    // 如果世代号已经包含"第"和"世代"，则提取中间的数字或文字
+                    if(genNumber.startsWith('第') && genNumber.endsWith('世代')) {
+                        genNumber = genNumber.substring(1, genNumber.length - 2);
+                    }
+
                     const h = this.$createElement;
                     
-                    // 修复结果弹窗显示
-                    MessageBox({
-                        title: '游戏结束',
-                        message: h('div', { class: 'result-container' }, [
-                            h('div', { class: 'result-image' }, [
+                    // 创建简洁的结果内容
+                    const resultContent = h('div', { class: 'result-dialog-container' }, [
+                        h('div', { class: 'result-dialog-header' }, [
+                            h('div', { class: 'result-image-container' }, [
                                 h('img', {
                                     attrs: {
                                         src: this.temp.imgUrl,
-                                        style: 'width: 100px; height: 100px;'
-                                    }
+                                        alt: data.name
+                                    },
+                                    class: 'result-pokemon-image'
                                 })
                             ]),
-                            h('div', { class: 'result-info' }, [
-                                h('p', { class: 'result-name' }, "宝可梦: " + data.name),
-                                h('p', { class: 'result-detail' }, "属性: " + this.reply.type),
-                                h('p', { class: 'result-detail' }, "种族值: " + data.pow.key),
-                                h('p', { class: 'result-detail' }, "特性: " + this.reply.ability),
-                                h('p', { class: 'result-detail' }, "其他标签: " + this.reply.label)
+                            h('div', { class: 'result-title-container' }, [
+                                h('h2', { class: 'result-pokemon-name' }, data.name),
+                                h('p', { class: 'result-pokemon-gen' }, `第${genNumber}世代`)
                             ])
                         ]),
+                        h('div', { class: 'result-info-compact' }, [
+                            h('div', { class: 'result-info-row' }, [
+                                h('span', { class: 'result-info-label' }, '属性:'),
+                                h('div', { class: 'result-info-tags' }, 
+                                    data.type.map(type => 
+                                        h('el-tag', { 
+                                            props: { size: 'mini', type: 'success' },
+                                            class: 'result-tag'
+                                        }, type.key)
+                                    )
+                                )
+                            ]),
+                            h('div', { class: 'result-info-row' }, [
+                                h('span', { class: 'result-info-label' }, '种族值:'),
+                                h('span', { class: 'result-info-value' }, data.pow.key)
+                            ]),
+                            h('div', { class: 'result-info-row' }, [
+                                h('span', { class: 'result-info-label' }, '特性:'),
+                                h('div', { class: 'result-info-tags' }, 
+                                    data.ability.map(ability => 
+                                        h('el-tag', { 
+                                            props: { size: 'mini', type: 'info' },
+                                            class: 'result-tag'
+                                        }, ability.key)
+                                    )
+                                )
+                            ])
+                        ]),
+                        h('div', { class: 'result-stats' }, [
+                            h('p', { class: 'result-guess-count' }, 
+                                `你用了 ${this.times} 次尝试${this.temp.answer === 'True' ? ' 猜出正确答案' : ''}`)
+                        ])
+                    ]);
+
+                    // 使用this.$alert代替MessageBox，更好控制样式和位置
+                    this.$alert(resultContent, this.temp.answer === 'True' ? '恭喜你猜对了！' : '游戏结束', {
                         confirmButtonText: '下一把',
-                        width: this.isMobile ? '90%' : '50%'
-                    }).then(()=>{
-                        // 可以在这里添加下一步操作
-                    }).catch(()=>{
-                        // 处理取消操作
+                        customClass: 'result-dialog',
+                        dangerouslyUseHTMLString: true,
+                        center: true, // 确保弹窗居中
+                        showClose: false,
+                        closeOnClickModal: false,
+                        closeOnPressEscape: false,
+                        callback: action => {
+                            this.Restart();
+                        }
                     });
                 }catch(error){
                     console.error(error)
@@ -1072,33 +1117,153 @@
         justify-content: center;
     }
     
+    /* 优化头部按钮 */
+    .header-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+    
+    .header-buttons .el-button {
+        margin-left: 10px;
+    }
+
+    /* 全局弹窗样式重置 */
+    .el-message-box {
+        display: flex !important;
+        flex-direction: column !important;
+        max-height: 90vh !important;
+        margin: 15vh auto !important; /* 确保垂直居中 */
+        position: relative !important;
+    }
+
     /* 结果对话框样式 */
-    .result-container {
+    .result-dialog {
+        border-radius: 8px !important;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+        overflow: hidden !important;
+    }
+
+    .result-dialog .el-message-box__header {
+        padding: 15px !important;
+        background-color: #f5f7fa !important;
+        border-bottom: 1px solid #e4e7ed !important;
+        text-align: center !important;
+    }
+
+    .result-dialog .el-message-box__title {
+        font-size: 18px !important;
+        color: #303133 !important;
+        font-weight: 600 !important;
+    }
+
+    .result-dialog .el-message-box__content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .result-dialog .el-message-box__btns {
+        padding: 10px 20px 15px !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .result-dialog .el-button {
+        width: 120px !important;
+        margin: 0 !important;
+    }
+
+    .result-dialog-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .result-dialog-header {
         display: flex;
         align-items: center;
         padding: 15px;
+        background-color: #f5f7fa;
     }
-    
-    .result-image {
-        margin-right: 20px;
+
+    .result-image-container {
+        margin-right: 15px;
+        flex-shrink: 0;
     }
-    
-    .result-info {
+
+    .result-pokemon-image {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .result-title-container {
         flex: 1;
     }
-    
-    .result-name {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 12px;
+
+    .result-pokemon-name {
+        font-size: 20px;
+        margin: 0 0 5px 0;
+        color: #303133;
     }
-    
-    .result-detail {
+
+    .result-pokemon-gen {
+        margin: 0;
+        color: #606266;
+        font-size: 14px;
+    }
+
+    .result-info-compact {
+        padding: 15px;
+    }
+
+    .result-info-row {
+        display: flex;
+        margin-bottom: 10px;
+        align-items: flex-start;
+    }
+
+    .result-info-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .result-info-label {
+        min-width: 60px;
+        font-weight: 500;
+        color: #606266;
+    }
+
+    .result-info-value {
+        color: #303133;
+    }
+
+    .result-info-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .result-tag {
+        margin: 2px;
+    }
+
+    .result-stats {
+        text-align: center;
+        padding: 10px 15px;
+        color: #606266;
+        border-top: 1px solid #e4e7ed;
+        background-color: #f5f7fa;
+    }
+
+    .result-guess-count {
         font-size: 15px;
-        margin: 8px 0;
+        margin: 0;
     }
-    
-    /* 响应式调整 */
+
+    /* 移动端适配 */
     @media screen and (max-width: 768px) {
         .guess {
             margin-left: 2%;
@@ -1109,25 +1274,53 @@
             font-size: 1rem;
         }
         
-        .result-container {
-            flex-direction: column;
-            text-align: center;
+        .el-message-box {
+            width: 85% !important;
+            max-width: 320px !important; /* 限制最大宽度 */
         }
         
-        .result-image {
-            margin-right: 0;
-            margin-bottom: 15px;
+        .result-dialog-header {
+            padding: 12px;
         }
+        
+        .result-pokemon-image {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .result-pokemon-name {
+            font-size: 18px;
+        }
+        
+        .result-info-compact {
+            padding: 12px;
+        }
+        
+        .result-info-row {
+            margin-bottom: 8px;
+        }
+        
+        .result-info-label {
+            min-width: 50px;
+        }       
     }
-    
-    /* 优化头部按钮 */
-    .header-buttons {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 10px;
+    /* 强制按钮居中的样式 */
+    .result-dialog .el-message-box__btns {
+        display: flex !important;
+        justify-content: center !important;
+        padding: 10px 20px 15px !important;
+        text-align: center !important;
     }
-    
-    .header-buttons .el-button {
-        margin-left: 10px;
+
+    .result-dialog .el-button {
+        width: 120px !important;
+        margin: 0 auto !important;  /* 确保水平居中 */
+        float: none !important;     /* 防止浮动影响 */
+        display: block !important;  /* 确保按钮是块级元素 */
+    }
+
+    /* 覆盖Element UI可能的默认对齐 */
+    .result-dialog .el-message-box__btns button:nth-child(2) {
+        margin-left: 0 !important;
     }
 </style>
