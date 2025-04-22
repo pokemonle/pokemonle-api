@@ -126,6 +126,7 @@
                     
                     <p>简单模式只会保留较为热门或携带其他标签的宝可梦。</p>
                     <p><strong>世代选择：</strong>可以选择单个或多个世代组合进行游戏。</p>
+                    <p><strong>随机开局：</strong>帮你随机选择一个当前世代范围内的宝可梦作为第一次猜测。</p>
                 </div>
                 
                 <div slot="footer" class="dialog-footer">
@@ -154,17 +155,28 @@
                     </el-row>
                     <!-- 增加按钮与输入框之间的间距 -->
                     <el-row type="flex" justify="center" align="middle" :gutter="20" class="button-row">
-                        <el-col :span="isMobile ? 8 : 4" class="button-col">
+                        <!-- 新增随机开局按钮 -->
+                        <el-col :span="isMobile ? 6 : 3" class="button-col">
+                            <el-button 
+                                type="primary" 
+                                class="action-button" 
+                                :disabled="this.times > 0 || this.gameover" 
+                                @click="RandomStart()"
+                                icon="el-icon-refresh-left">
+                                随机开局
+                            </el-button>
+                        </el-col>
+                        <el-col :span="isMobile ? 6 : 3" class="button-col">
                             <el-button type="primary" class="action-button" :disabled="this.gameover" @click="Guess()">
                                 {{ this.gameover ? '已结束' : '确定' }}
                             </el-button>
                         </el-col>
-                        <el-col :span="isMobile ? 8 : 4" class="button-col">
+                        <el-col :span="isMobile ? 6 : 3" class="button-col">
                             <el-button type="danger" class="action-button" :disabled="this.gameover" @click="Surrender()">
                                 投降
                             </el-button>
                         </el-col>
-                        <el-col :span="isMobile ? 8 : 4" class="button-col">
+                        <el-col :span="isMobile ? 6 : 3" class="button-col">
                             <el-button type="success" class="action-button" @click="Restart()">重新开始</el-button>
                         </el-col>
                     </el-row>
@@ -598,6 +610,70 @@
                     console.error(error)
                 }
             },
+            // 新增：随机开局功能
+            // 随机开局功能修正 - 前端实现
+            async RandomStart() {
+                // 确保游戏已经初始化并且是第一次猜测
+                if (this.times > 0 || this.gameover) return;
+                
+                try {
+                    // 确保名称列表已加载
+                    if (this.nameList.length === 0) {
+                        await this.loadName();
+                    }
+                    
+                    // 如果没有选择任何世代，默认选择全部世代
+                    if (this.selectedGenIndices.length === 0) {
+                        this.settings.selectedGens = [true, true, true, true, true, true, true, true, true];
+                    }
+                    
+                    // 从已选世代范围内筛选宝可梦
+                    const eligiblePokemon = [];
+                    
+                    // 为每个宝可梦分配一个预估的世代（简化处理）
+                    this.nameList.forEach((pokemon, index) => {
+                        // 使用索引来估算宝可梦的世代范围
+                        // 这里假设nameList是按照图鉴编号排序的
+                        const pokemonId = index;
+                        
+                        // 检查该宝可梦是否在任何选定的世代范围内
+                        const inSelectedGen = this.settings.selectedGens.some((selected, genIndex) => {
+                            if (!selected) return false;
+                            
+                            const range = this.genOptions[genIndex].range;
+                            return pokemonId >= range[0] && pokemonId <= range[1];
+                        });
+                        
+                        if (inSelectedGen) {
+                            eligiblePokemon.push(pokemon.value);
+                        }
+                    });
+                    
+                    // 如果没有符合条件的宝可梦，则使用所有宝可梦
+                    const pokemonPool = eligiblePokemon.length > 0 ? eligiblePokemon : this.nameList.map(p => p.value);
+                    
+                    // 随机选择一个宝可梦
+                    const randomIndex = Math.floor(Math.random() * pokemonPool.length);
+                    const randomPokemon = pokemonPool[randomIndex];
+                    
+                    // 设置输入框值并提交
+                    this.input = randomPokemon;
+                    
+                    // 自动提交猜测
+                    this.$nextTick(() => {
+                        this.Guess();
+                    });
+                    
+                } catch (error) {
+                    console.error("随机开局错误:", error);
+                    this.$notify({
+                        title: '随机失败',
+                        message: '无法随机选择宝可梦，请手动输入',
+                        type: "warning"
+                    });
+                }
+            },
+
             // 从答案中提取宝可梦ID
             storeAnswerId(answer) {
                 try {
@@ -804,7 +880,8 @@
                             console.error('图片获取失败:',error);
                         }
 
-                        this.tableData.push(this.temp);
+                        // 修改：将最新猜测的宝可梦插入到数组的开头，而不是末尾
+                        this.tableData.unshift(this.temp);
                         this.times++;
                         
                         // 清空输入框
@@ -942,7 +1019,7 @@
                         h('div', { class: 'result-stats' }, [
                             h('p', { class: 'result-guess-count' }, 
                                 this.surrendered ? 
-                                '你已投降' : 
+                                '你已投降，得不得行呀' : 
                                 `你用了 ${this.times} 次尝试${this.temp.answer === 'True' ? ' 猜出正确答案' : ''}`)
                         ])
                     ]);
@@ -953,7 +1030,7 @@
                     if (!this.surrendered) {  // 如果不是投降
                         if (this.temp.answer === 'True') {  // 如果猜对了
                             if (this.times <= 3) {  // 三次及以内猜对
-                                dialogTitle = '太厉害了，鼓掌👏';
+                                dialogTitle = '太厉害了，鼓掌👏👏👏';
                             } else {  // 三次以上猜对
                                 dialogTitle = '恭喜你猜对了！';
                             }
