@@ -136,19 +136,23 @@
         </el-header>
         <el-main>
             <div class="guess">
-                <!-- 统一居中的输入区域 -->
+                <!-- 修改：增加顶部间距并使用相对定位来确保下拉菜单不遮挡按钮 -->
                 <div class="input-container">
                     <el-row type="flex" justify="center" align="middle" class="input-row">
-                        <el-col :span="isMobile ? 24 : 12" class="input-col">
-                            <el-autocomplete
-                            class="inline-input"
-                            v-model="input"
-                            :fetch-suggestions="querySearch"
-                            placeholder="请输入宝可梦名称"
-                            :trigger-on-focus="false"
-                            style="width: 100%"></el-autocomplete>
+                        <el-col :span="isMobile ? 24 : 16" class="input-col">
+                            <div class="autocomplete-wrapper">
+                                <el-autocomplete
+                                class="inline-input"
+                                v-model="input"
+                                :fetch-suggestions="querySearch"
+                                placeholder="请输入宝可梦名称"
+                                :trigger-on-focus="false"
+                                popper-class="autocomplete-dropdown"
+                                style="width: 100%"></el-autocomplete>
+                            </div>
                         </el-col>
                     </el-row>
+                    <!-- 增加按钮与输入框之间的间距 -->
                     <el-row type="flex" justify="center" align="middle" :gutter="20" class="button-row">
                         <el-col :span="isMobile ? 8 : 4" class="button-col">
                             <el-button type="primary" class="action-button" :disabled="this.gameover" @click="Guess()">
@@ -1015,41 +1019,41 @@
                 }
             },
             // 修改loadSettings方法，确保在加载设置后立即更新猜测次数
-                loadSettings(){
-                    try{
-                        const savedSettings=localStorage.getItem("guessSettings");
-                        if(savedSettings){
-                            const parsedSettings = JSON.parse(savedSettings);
-                            
-                            // 处理旧版本的设置
-                            if (parsedSettings.genid && !parsedSettings.selectedGens) {
-                                // 如果有旧版本的genid但没有selectedGens，初始化为全选
-                                parsedSettings.selectedGens = [true, true, true, true, true, true, true, true, true];
-                            }
-                            
-                            // 确保有baseGuessCount属性
-                            if (parsedSettings.maxguess && !parsedSettings.baseGuessCount) {
-                                parsedSettings.baseGuessCount = parsedSettings.maxguess;
-                            } else if (!parsedSettings.baseGuessCount) {
-                                parsedSettings.baseGuessCount = 10;
-                            }
-                            
-                            // 更新设置
-                            this.settings = { ...this.settings, ...parsedSettings };
+            loadSettings(){
+                try{
+                    const savedSettings=localStorage.getItem("guessSettings");
+                    if(savedSettings){
+                        const parsedSettings = JSON.parse(savedSettings);
+                        
+                        // 处理旧版本的设置
+                        if (parsedSettings.genid && !parsedSettings.selectedGens) {
+                            // 如果有旧版本的genid但没有selectedGens，初始化为全选
+                            parsedSettings.selectedGens = [true, true, true, true, true, true, true, true, true];
                         }
                         
-                        // 无论是否加载了已保存的设置，都确保在设置加载后立即更新猜测次数
-                        this.$nextTick(() => {
-                            this.updateGuessNumber();
-                        });
-                    }catch(e){
-                        console.error("设置加载失败：",e);
-                        // 即使加载失败也要确保更新猜测次数
-                        this.$nextTick(() => {
-                            this.updateGuessNumber();
-                        });
+                        // 确保有baseGuessCount属性
+                        if (parsedSettings.maxguess && !parsedSettings.baseGuessCount) {
+                            parsedSettings.baseGuessCount = parsedSettings.maxguess;
+                        } else if (!parsedSettings.baseGuessCount) {
+                            parsedSettings.baseGuessCount = 10;
+                        }
+                        
+                        // 更新设置
+                        this.settings = { ...this.settings, ...parsedSettings };
                     }
-                },
+                    
+                    // 无论是否加载了已保存的设置，都确保在设置加载后立即更新猜测次数
+                    this.$nextTick(() => {
+                        this.updateGuessNumber();
+                    });
+                }catch(e){
+                    console.error("设置加载失败：",e);
+                    // 即使加载失败也要确保更新猜测次数
+                    this.$nextTick(() => {
+                        this.updateGuessNumber();
+                    });
+                }
+            },
             handleResize() {
                 this.windowWidth = window.innerWidth;
                 this.isMobile = window.innerWidth <= 768;
@@ -1083,6 +1087,10 @@
                 this.Restart(); // 然后重启游戏
             });
             window.addEventListener('resize', this.handleResize);
+        },
+        beforeDestroy() {
+            // 移除事件监听，防止内存泄漏
+            window.removeEventListener('resize', this.handleResize);
         }
     }
 </script>
@@ -1205,22 +1213,44 @@
         margin-top: 8px;
     }
     
-    /* 输入区域居中优化 */
+    /* 输入区域相关样式调整 */
     .input-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         max-width: 1200px;
         margin: 0 auto 20px;
+        position: relative; /* 确保容器有相对定位，以便子元素绝对定位 */
     }
     
-    .input-row, .button-row {
+    /* 自动完成输入框包装器 */
+    .autocomplete-wrapper {
+        position: relative;
+        width: 100%;
+        margin-bottom: 60px; /* 增加下方空间，确保下拉列表不会覆盖按钮 */
+    }
+    
+    /* 输入行样式 */
+    .input-row {
         width: 100%;
         margin-bottom: 10px;
+        position: relative;
+        z-index: 10; /* 确保输入框在较高层级 */
     }
     
+    /* 按钮行样式 */
     .button-row {
+        width: 100%;
         margin-top: 10px;
+        position: relative;
+        z-index: 5; /* 按钮在下拉菜单下方，但仍然可点击 */
+    }
+    
+    /* 自动完成下拉菜单样式覆盖 */
+    .autocomplete-dropdown {
+        z-index: 9 !important; /* 确保下拉菜单不会覆盖按钮 */
+        max-height: 250px !important; /* 限制下拉菜单高度 */
+        overflow-y: auto !important;
     }
     
     /* 桌面端卡片居中容器 */
@@ -1622,6 +1652,11 @@
             flex-direction: column;
             gap: 5px;
         }
+        
+        /* 移动端输入框增强 */
+        .autocomplete-wrapper {
+            margin-bottom: 80px; /* 移动端增加更多下方空间 */
+        }
     }
 
     /* 强制按钮居中的样式 */
@@ -1664,5 +1699,28 @@
         display: flex !important;
         justify-content: center !important;
         width: 100% !important;
+    }
+    
+    /* 纠正输入框下拉菜单的层级和定位 */
+    .el-autocomplete-suggestion {
+        max-height: 200px !important;
+        margin-top: 5px !important;
+        z-index: 100 !important;
+    }
+    
+    .el-autocomplete-suggestion__wrap {
+        max-height: 180px !important;
+    }
+    
+    /* 确保按钮在移动端仍然可见和可点击 */
+    @media screen and (max-width: 768px) {
+        .button-row {
+            margin-top: 15px;
+            z-index: 20; /* 在移动端提高按钮层级 */
+        }
+        
+        .action-button {
+            height: 44px; /* 移动端增大按钮高度 */
+        }
     }
 </style>
