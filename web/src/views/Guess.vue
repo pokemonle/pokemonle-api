@@ -31,16 +31,20 @@
                         </el-option>
                     </el-select>
                     <br>
-                    世代：<el-select v-model="settings.genid" placeholder="请选择" size="small" style="width: 50%"
-                        @change="ReloadGuessNumber()">
-                        <el-option
-                        v-for="item in this.gens"
-                        :key="item"
-                        :label="item"
-                        :value="item"
-                        >
-                        </el-option>
-                    </el-select>
+                    世代（需要打开最下方手动调整）：
+                    <div class="gen-selection">
+                        <el-checkbox v-model="allGensSelected" @change="handleAllGensChange">全世代</el-checkbox>
+                        <div class="gen-checkboxes">
+                            <el-checkbox 
+                                v-for="(gen, index) in genOptions" 
+                                :key="gen.value" 
+                                v-model="settings.selectedGens[index]"
+                                :disabled="allGensSelected"
+                                @change="handleGenChange">
+                                {{ gen.label }}
+                            </el-checkbox>
+                        </div>
+                    </div>
                     <br>
                     <el-switch
                     v-model="settings.battleOpen"
@@ -107,6 +111,10 @@
                     "↑": 应该往高了猜；"↓": 应该往低了猜；
                     <br>
                     简单模式只会保留较为热门或携带其他标签的宝可梦。
+                    <br>
+                    <div>
+                        <strong>世代选择：</strong>可以选择单个或多个世代组合进行游戏。
+                    </div>
                 </div>
                 
                 <span slot="footer" class="dialog-footer">
@@ -400,19 +408,73 @@
                 gameover:false,
                 settingVisble:false,
                 introVisble:false,
-                gens:["全世代","第一世代","第二世代","第三世代","第四世代","第五世代","第六世代","第七世代","第八世代","第九世代"],
+                gens:["全世代","第一世代（红/黄/蓝/绿）","第二世代（金/银）","第三世代（红宝石/蓝宝石/绿宝石/火红/叶绿）","第四世代（珍珠/钻石/白金/心金/魂银）","第五世代（黑/白/黑2/白2）","第六世代（X/Y/始源红宝石/终极蓝宝石）","第七世代（日/月/究极之日/究极之月）","第八世代（剑/盾）","第九世代（朱/紫）"],
+                genOptions: [
+                    { label: '第一世代（红/黄/蓝/绿）', value: 1, range: [0, 150] },  // 0001-0151
+                    { label: '第二世代（金/银）', value: 2, range: [151, 250] }, // 0152-0251
+                    { label: '第三世代（红宝石/蓝宝石/绿宝石/火红/叶绿）', value: 3, range: [251, 385] }, // 0252-0386
+                    { label: '第四世代（珍珠/钻石/白金/心金/魂银）', value: 4, range: [386, 492] }, // 0387-0493
+                    { label: '第五世代（黑/白/黑2/白2）', value: 5, range: [493, 648] }, // 0494-0649
+                    { label: '第六世代（X/Y/始源红宝石/终极蓝宝石）', value: 6, range: [649, 720] }, // 0650-0721
+                    { label: '第七世代（日/月/究极之日/究极之月）', value: 7, range: [721, 808] }, // 0722-0809
+                    { label: '第八世代（剑/盾）', value: 8, range: [809, 904] }, // 0810-0905
+                    { label: '第九世代（朱/紫）', value: 9, range: [905, 1024] } // 0906-1025
+                ],
+                allGensSelected: true,
                 hards:["普通模式","简单模式"],
                 settings:{
-                    genid:"全世代",
                     hardid:"普通模式",
+                    genid:"全世代", // 保留以兼容旧数据
+                    selectedGens: [false, false, false, false, false, false, false, false, false],
                     maxguess:10,
                     autodif:true,
                     battleOpen:false,
                     shapeOpen:false,
                     catchOpen:false,
                 },
+                currentAnswerId: null, // 存储当前答案的ID
                 windowWidth: window.innerWidth,
                 isMobile: window.innerWidth <= 768
+            }
+        },
+        computed: {
+            // 计算当前选择的世代索引
+            selectedGenIndices() {
+                if (this.allGensSelected) {
+                    return [0]; // 全世代模式
+                }
+                
+                // 获取所有选中的世代索引+1（因为API索引从1开始，第一世代对应索引1）
+                return this.settings.selectedGens
+                    .map((selected, index) => selected ? index + 1 : null)
+                    .filter(index => index !== null);
+            },
+            
+            // 判断当前选择的宝可梦ID是否在所选世代范围内
+            isPokemonInSelectedGens() {
+                // 如果是全世代模式，所有宝可梦都符合条件
+                if (this.allGensSelected) {
+                    return true;
+                }
+                
+                // 如果没有选择任何世代，默认为全世代
+                if (this.selectedGenIndices.length === 0) {
+                    return true;
+                }
+                
+                // 获取当前答案ID对应的宝可梦编号（假设从0开始）
+                const pokemonId = this.currentAnswerId;
+                if (pokemonId === null) {
+                    return true; // 如果没有答案ID，默认返回true
+                }
+                
+                // 检查宝可梦ID是否在任何选定的世代范围内
+                return this.settings.selectedGens.some((selected, index) => {
+                    if (!selected) return false;
+                    
+                    const range = this.genOptions[index].range;
+                    return pokemonId >= range[0] && pokemonId <= range[1];
+                });
             }
         },
         methods:{
@@ -471,26 +533,57 @@
                 this.tableData=[]
                 console.log(`${process.env.VUE_APP_API_BASE_URL}/initget`)
                 try{
-                    const gen=this.gens.indexOf(this.settings.genid)
+                    // 如果是全世代模式或没有选择任何世代，使用全世代(0)
+                    let genValue = 0;
+                    
+                    // 如果不是全世代模式且选择了至少一个世代
+                    if (!this.allGensSelected && this.selectedGenIndices.length > 0) {
+                        // 随机选择一个已选世代的索引
+                        const randomIndex = Math.floor(Math.random() * this.selectedGenIndices.length);
+                        genValue = this.selectedGenIndices[randomIndex];
+                    }
+                    
                     const dif=this.hards.indexOf(this.settings.hardid)
                     const options = {
                         method: 'GET',
                         url: `${process.env.VUE_APP_API_BASE_URL}/initget`,
                         params:{
                             difficulty:dif,
-                            gen:gen
+                            gen:genValue
                         }   
                     };
 
                     await axios.request(options).then((response)=>{
                         this.tempdata=response.data
                         console.log(this.tempdata)
+                        
+                        // 存储答案ID
+                        this.storeAnswerId(this.tempdata);
+                        
+                        // 检查答案是否在选定的世代范围内
+                        if (!this.allGensSelected && !this.isPokemonInSelectedGens) {
+                            // 如果答案不在选定的世代范围内，重新启动
+                            console.log("答案不在选定的世代范围内，重新获取...");
+                            this.Restart();
+                            return;
+                        }
                     }).catch(function (error) {
                         console.error(error);
                     });
                     sessionStorage.setItem('answer',this.tempdata)
                 }catch(error){
                     console.error(error)
+                }
+            },
+            // 从答案中提取宝可梦ID
+            storeAnswerId(answer) {
+                try {
+                    // 这里需要根据实际API返回的格式来提取ID
+                    // 假设API返回的是宝可梦的编号或者某种可以转换为ID的形式
+                    this.currentAnswerId = parseInt(answer);
+                } catch (error) {
+                    console.error("无法解析答案ID", error);
+                    this.currentAnswerId = null;
                 }
             },
             async Guess(){
@@ -785,18 +878,18 @@
                                 h('p', { class: 'result-pokemon-gen' }, `第${genNumber}世代`)
                             ])
                         ]),
-                        h('div', { class: 'result-info-compact' }, [
-                            h('div', { class: 'result-info-row' }, [
-                                h('span', { class: 'result-info-label' }, '属性:'),
-                                h('div', { class: 'result-info-tags' }, 
-                                    data.type.map(type => 
-                                        h('el-tag', { 
-                                            props: { size: 'mini', type: 'success' },
-                                            class: 'result-tag'
-                                        }, type.key)
+                            h('div', { class: 'result-info-compact' }, [
+                                h('div', { class: 'result-info-row' }, [
+                                    h('span', { class: 'result-info-label' }, '属性:'),
+                                    h('div', { class: 'result-info-tags' }, 
+                                        data.type.filter(type => type.key !== "无").map(type => 
+                                            h('el-tag', { 
+                                                props: { size: 'mini', type: 'success' },
+                                                class: 'result-tag'
+                                            }, type.key)
+                                        )
                                     )
-                                )
-                            ]),
+                                ]),
                             h('div', { class: 'result-info-row' }, [
                                 h('span', { class: 'result-info-label' }, '种族值:'),
                                 h('span', { class: 'result-info-value' }, data.pow.key)
@@ -820,16 +913,20 @@
                     ]);
 
                     // 使用this.$alert代替MessageBox，更好控制样式和位置
-                    this.$alert(resultContent, this.temp.answer === 'True' ? '恭喜你猜对了！' : '游戏结束', {
+                    this.$confirm(resultContent, this.temp.answer === 'True' ? '恭喜你猜对了！' : '游戏结束', {
                         confirmButtonText: '下一把',
+                        cancelButtonText: '返回',
                         customClass: 'result-dialog',
                         dangerouslyUseHTMLString: true,
                         center: true, // 确保弹窗居中
                         showClose: false,
                         closeOnClickModal: false,
                         closeOnPressEscape: false,
+                        distinguishCancelAndClose: true,
                         callback: action => {
-                            this.Restart();
+                            if (action === 'confirm') {
+                                this.Restart();
+                            }
                         }
                     });
                 }catch(error){
@@ -845,7 +942,21 @@
                 if(this.settings.autodif==false)return true;
                 this.settings.maxguess=10;
                 var x=this.settings.battleOpen*2+this.settings.shapeOpen*2+this.settings.catchOpen;
-                if(this.settings.genid!="全世代")this.settings.maxguess-=3,x+=(x<=3);
+                
+                // 根据选择的世代数量调整难度
+                if (!this.allGensSelected) {
+                    const selectedGenCount = this.settings.selectedGens.filter(Boolean).length;
+                    if (selectedGenCount > 0) {
+                        // 选择的世代越少，游戏越简单
+                        const difficultyAdjustment = Math.max(1, Math.floor(3 * (9 - selectedGenCount) / 9));
+                        this.settings.maxguess -= difficultyAdjustment;
+                    } else {
+                        // 如果没有选择任何世代，默认为全世代
+                        this.allGensSelected = true;
+                    }
+                    x += (x <= 3) ? 1 : 0;
+                }
+                
                 if(x==1&&this.settings.catchOpen)x++;
                 if(x==2&&this.settings.battleOpen)x++;
                 else if(x>=3)x++;
@@ -859,7 +970,12 @@
             saveSettings(){
                 console.log("保存设置中")
                 try{
-                    localStorage.setItem('guessSettings',JSON.stringify(this.settings));
+                    // 保存当前设置状态
+                    const settingsToSave = {
+                        ...this.settings,
+                        allGensSelected: this.allGensSelected
+                    };
+                    localStorage.setItem('guessSettings', JSON.stringify(settingsToSave));
                 }catch(e){
                     console.error("设置保存失败：",e);
                 }
@@ -868,7 +984,37 @@
                 try{
                     const savedSettings=localStorage.getItem("guessSettings");
                     if(savedSettings){
-                        this.settings=JSON.parse(savedSettings);
+                        const parsedSettings = JSON.parse(savedSettings);
+                        
+                        // 处理旧版本的设置
+                        if (parsedSettings.genid && !parsedSettings.selectedGens) {
+                            // 如果有旧版本的genid但没有selectedGens，初始化selectedGens
+                            parsedSettings.selectedGens = [false, false, false, false, false, false, false, false, false];
+                            
+                            // 如果旧版本不是"全世代"，则将对应的世代设为选中
+                            if (parsedSettings.genid !== "全世代") {
+                                const genIndex = this.gens.indexOf(parsedSettings.genid) - 1;
+                                if (genIndex >= 0 && genIndex < 9) {
+                                    parsedSettings.selectedGens[genIndex] = true;
+                                    parsedSettings.allGensSelected = false;
+                                } else {
+                                    parsedSettings.allGensSelected = true;
+                                }
+                            } else {
+                                parsedSettings.allGensSelected = true;
+                            }
+                        }
+                        
+                        // 更新设置
+                        this.settings = { ...this.settings, ...parsedSettings };
+                        
+                        // 设置全选状态
+                        if (parsedSettings.allGensSelected !== undefined) {
+                            this.allGensSelected = parsedSettings.allGensSelected;
+                        } else {
+                            // 如果没有保存全选状态，根据selectedGens来判断
+                            this.allGensSelected = !this.settings.selectedGens.some(Boolean);
+                        }
                     }
                 }catch(e){
                     console.error("设置加载失败：",e);
@@ -877,9 +1023,26 @@
             handleResize() {
                 this.windowWidth = window.innerWidth;
                 this.isMobile = window.innerWidth <= 768;
+            },
+            // 处理"全世代"复选框变化
+            handleAllGensChange(value) {
+                if (value) {
+                    // 如果选中"全世代"，取消所有单独的世代选择
+                    this.settings.selectedGens = this.settings.selectedGens.map(() => false);
+                }
+                this.ReloadGuessNumber();
+            },
+            // 处理单个世代复选框变化
+            handleGenChange() {
+                // 如果有任何世代被选中，取消"全世代"选项
+                if (this.settings.selectedGens.some(Boolean)) {
+                    this.allGensSelected = false;
+                } else {
+                    // 如果没有世代被选中，默认选中"全世代"
+                    this.allGensSelected = true;
+                }
+                this.ReloadGuessNumber();
             }
-        },
-        computed:{
         },
         mounted() {
             this.loadSettings();
@@ -911,6 +1074,18 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+    }
+    
+    /* 世代选择样式 */
+    .gen-selection {
+        margin: 10px 0;
+    }
+    
+    .gen-checkboxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
     }
     
     /* 输入区域居中优化 */
@@ -1302,7 +1477,13 @@
         
         .result-info-label {
             min-width: 50px;
-        }       
+        }
+        
+        /* 移动端世代复选框优化 */
+        .gen-checkboxes {
+            flex-direction: column;
+            gap: 5px;
+        }
     }
     /* 强制按钮居中的样式 */
     .result-dialog .el-message-box__btns {
@@ -1322,5 +1503,16 @@
     /* 覆盖Element UI可能的默认对齐 */
     .result-dialog .el-message-box__btns button:nth-child(2) {
         margin-left: 0 !important;
+    }
+    /* 添加到样式部分，确保两个按钮并排显示 */
+    .result-dialog .el-message-box__btns {
+        display: flex !important;
+        justify-content: space-around !important;
+        padding: 10px 20px 15px !important;
+    }
+
+    .result-dialog .el-button {
+        width: 45% !important;
+        margin: 0 5px !important;
     }
 </style>
