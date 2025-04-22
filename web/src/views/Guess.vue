@@ -16,7 +16,7 @@
             <el-dialog
                 title="设置"
                 :visible.sync="settingVisble"
-                width="30%"
+                :width="isMobile ? '90%' : '50%'"
                 :show-close="false"
                 :close-on-click-modal="false"
                 :close-on-press-escape="false">
@@ -85,7 +85,7 @@
             <el-dialog
                 title="规则介绍"
                 :visible.sync="introVisble"
-                width="30%"
+                :width="isMobile ? '90%' : '50%'"
                 :show-close=false>
                 <div class="setting">
                     输入一个宝可梦进行猜测。
@@ -117,173 +117,260 @@
         </el-header>
         <el-main>
             <div class="guess">
-                <el-row type="flex" justify="center" align="middle" gutter="20">
-                    <el-col :span="7">
-                        <el-autocomplete
-                        class="inline-input"
-                        v-model="input"
-                        :fetch-suggestions="querySearch"
-                        placeholder="请输入内容"
-                        :trigger-on-focus="false"
-                        style="width: 100%"></el-autocomplete>
-                    </el-col>
-                    <el-col :span="2">
-                        <el-button type="primary" style="width: 100%" :disabled="this.gameover" @click="Guess()">
-                            {{ this.gameover ? '已结束' : '确定' }}
-                        </el-button>
-                    </el-col>
-                    <el-col :span="2">
-                        <el-button type="success" style="width: 100%" @click="Restart()">重新开始</el-button>
-                    </el-col>
-                    <!-- <el-col :span="12"><div class="grid-content bg-purple">aaa</div></el-col>
-                    <el-col :span="12"><div class="grid-content bg-purple-light">bbb</div></el-col> -->
-                </el-row>
+                <!-- 统一居中的输入区域 -->
+                <div class="input-container">
+                    <el-row type="flex" justify="center" align="middle" class="input-row">
+                        <el-col :span="isMobile ? 24 : 12" class="input-col">
+                            <el-autocomplete
+                            class="inline-input"
+                            v-model="input"
+                            :fetch-suggestions="querySearch"
+                            placeholder="请输入宝可梦名称"
+                            :trigger-on-focus="false"
+                            style="width: 100%"></el-autocomplete>
+                        </el-col>
+                    </el-row>
+                    <el-row type="flex" justify="center" align="middle" :gutter="20" class="button-row">
+                        <el-col :span="isMobile ? 12 : 6" class="button-col">
+                            <el-button type="primary" class="action-button" :disabled="this.gameover" @click="Guess()">
+                                {{ this.gameover ? '已结束' : '确定' }}
+                            </el-button>
+                        </el-col>
+                        <el-col :span="isMobile ? 12 : 6" class="button-col">
+                            <el-button type="success" class="action-button" @click="Restart()">重新开始</el-button>
+                        </el-col>
+                    </el-row>
+                </div>
+                
                 <div class="times">
                     猜测次数：{{this.times}}/{{this.settings.maxguess}}
                 </div>
-                <el-table
-                :data="tableData"
-                style="width: 100%"
-                empty-text=" ">
-
-                    <el-table-column
-                    label=""
-                    min-width="70">
-                        <template slot-scope="scope">
-                                <el-image
-                                style="width: 50px; height: 50px"
-                                :src="scope.row.imgUrl"
-                                :fit="fit"
-                                ></el-image>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="宝可梦"
-                    min-width="100"
-                    align="center">
-                        <template slot-scope="scope">
-                            <p style="white-space: nowrap;">{{ scope.row.name }}</p>
-                        </template>
-                    </el-table-column>
-
-                    
-                    <el-table-column
-                    label="外形"
-                    min-width="100"
-                    align="center"
-                    v-if="settings.shapeOpen">
-                        <template slot-scope="scope">
-                            <el-tag style="font-size: 17px" :type="scope.row.shape.col">
-                                {{ scope.row.shape.key }}
-                            </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.col.col">
-                                {{ scope.row.col.key }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="属性"
-                    min-width="100"
-                    align="center">
-                        <template slot-scope="scope">
-                            <a v-for="item in scope.row.type">
-                                <el-tag style="font-size: 17px" :type="item.col">
-                                    {{ item.key }}
+                
+                <!-- 移动端卡片垂直布局 -->
+                <div v-if="isMobile" class="pokemon-cards mobile-cards">
+                    <div v-for="(item, index) in tableData" :key="index" class="pokemon-card">
+                        <div class="card-header">
+                            <div class="pokemon-image">
+                                <el-image style="width: 50px; height: 50px" :src="item.imgUrl" fit="contain"></el-image>
+                            </div>
+                            <div class="pokemon-name">{{ item.name }}</div>
+                        </div>
+                        
+                        <div class="card-section">
+                            <div class="section-title">属性</div>
+                            <div class="section-content">
+                                <el-tag v-for="(type, idx) in item.type" :key="'type-'+idx" 
+                                    size="mini" :type="type.col" class="info-tag">
+                                    {{ type.key }}
                                 </el-tag>
-                            </a>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="种族值"
-                    min-width="150"
-                    align="center">
-                        <template slot-scope="scope">
-                            <el-tag style="font-size: 17px" :type="scope.row.pow.col">
-                                {{ ValueText(scope.row.pow.key,scope.row.pow.value) }}
-                            </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.speed.col" v-if="settings.battleOpen">
-                                速度:{{ ValueText(scope.row.speed.key,scope.row.speed.value) }}
-                            </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.attack.col" v-if="settings.battleOpen">
-                                {{ scope.row.attack.key }}
-                            </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.defense.col" v-if="settings.battleOpen">
-                                {{ scope.row.defense.key }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="世代"
-                    min-width="120"
-                    align="center">
-                        <template slot-scope="scope">
-                            <el-tag style="font-size: 17px" :type="scope.row.gen.col">
-                                {{ ValueText(scope.row.gen.key,scope.row.gen.value) }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-                    
-                    <el-table-column
-                    label="特性"
-                    min-width="150"
-                    align="center">
-                        <template slot-scope="scope">
-                            <a v-for="item in scope.row.ability">
-                                <el-tag style="font-size: 17px" :type="item.col">
-                                    {{ item.key }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-section">
+                            <div class="section-title">种族值</div>
+                            <div class="section-content">
+                                <el-tag size="mini" :type="item.pow.col" class="info-tag">
+                                    {{ ValueText(item.pow.key, item.pow.value) }}
                                 </el-tag>
-                            </a>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="进化条件"
-                    min-width="170"
-                    align="center">
-                        <template slot-scope="scope">
-                            <el-tag style="font-size: 17px" :type="scope.row.evo.col" v-if="scope.row.evo.key!=null">
-                                {{ scope.row.evo.key }}
-                            </el-tag>
-                            <el-tag style="font-size: 17px" :type="scope.row.stage.col">
-                                {{ scope.row.stage.key }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="蛋组/捕获率"
-                    min-width="120"
-                    align="center"
-                    v-if="settings.catchOpen">
-                        <template slot-scope="scope">
-                            <a v-for="item in scope.row.egg">
-                                <el-tag style="font-size: 17px" :type="item.col">
-                                    {{ item.key }}
+                                <el-tag v-if="settings.battleOpen" size="mini" :type="item.speed.col" class="info-tag">
+                                    速度:{{ ValueText(item.speed.key, item.speed.value) }}
                                 </el-tag>
-                            </a>
-                            <el-tag style="font-size: 17px" :type="scope.row.catrate.col">
-                                捕获率:{{ ValueText(scope.row.catrate.key,scope.row.catrate.value) }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                    label="其他"
-                    min-width="200"
-                    align="center">
-                        <template slot-scope="scope">
-                            <a v-for="item in scope.row.label">
-                                <el-tag style="font-size: 17px" :type="item.col">
-                                    {{ item.key }}
+                            </div>
+                        </div>
+                        
+                        <div v-if="settings.battleOpen" class="card-section">
+                            <div class="section-title">攻防</div>
+                            <div class="section-content">
+                                <el-tag size="mini" :type="item.attack.col" class="info-tag">
+                                    {{ item.attack.key }}
                                 </el-tag>
-                            </a>
-                        </template>
-                    </el-table-column>
-                </el-table>
+                                <el-tag size="mini" :type="item.defense.col" class="info-tag">
+                                    {{ item.defense.key }}
+                                </el-tag>
+                            </div>
+                        </div>
+                        
+                        <div class="card-section">
+                            <div class="section-title">世代</div>
+                            <div class="section-content">
+                                <el-tag size="mini" :type="item.gen.col" class="info-tag">
+                                    {{ ValueText(item.gen.key, item.gen.value) }}
+                                </el-tag>
+                            </div>
+                        </div>
+                        
+                        <div class="card-section">
+                            <div class="section-title">特性</div>
+                            <div class="section-content">
+                                <el-tag v-for="(ability, idx) in item.ability" :key="'ability-'+idx" 
+                                    size="mini" :type="ability.col" class="info-tag">
+                                    {{ ability.key }}
+                                </el-tag>
+                            </div>
+                        </div>
+                        
+                        <div class="card-section">
+                            <div class="section-title">进化</div>
+                            <div class="section-content">
+                                <el-tag v-if="item.evo.key != null" size="mini" :type="item.evo.col" class="info-tag">
+                                    {{ item.evo.key }}
+                                </el-tag>
+                                <el-tag size="mini" :type="item.stage.col" class="info-tag">
+                                    {{ item.stage.key }}
+                                </el-tag>
+                            </div>
+                        </div>
+                        
+                        <div v-if="settings.shapeOpen" class="card-section">
+                            <div class="section-title">外形</div>
+                            <div class="section-content">
+                                <el-tag size="mini" :type="item.shape.col" class="info-tag">
+                                    {{ item.shape.key }}
+                                </el-tag>
+                                <el-tag size="mini" :type="item.col.col" class="info-tag">
+                                    {{ item.col.key }}
+                                </el-tag>
+                            </div>
+                        </div>
+                        
+                        <div v-if="settings.catchOpen" class="card-section">
+                            <div class="section-title">蛋组/捕获率</div>
+                            <div class="section-content">
+                                <el-tag v-for="(egg, idx) in item.egg" :key="'egg-'+idx" 
+                                    size="mini" :type="egg.col" class="info-tag">
+                                    {{ egg.key }}
+                                </el-tag>
+                                <el-tag size="mini" :type="item.catrate.col" class="info-tag">
+                                    捕获率:{{ ValueText(item.catrate.key, item.catrate.value) }}
+                                </el-tag>
+                            </div>
+                        </div>
+                        
+                        <div class="card-section">
+                            <div class="section-title">其他</div>
+                            <div class="section-content">
+                                <el-tag v-for="(label, idx) in item.label" :key="'label-'+idx" 
+                                    size="mini" :type="label.col" class="info-tag">
+                                    {{ label.key }}
+                                </el-tag>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 桌面端卡片水平布局 -->
+                <div v-else class="pokemon-cards desktop-cards">
+                    <div v-for="(item, index) in tableData" :key="index" class="pokemon-card desktop-card">
+                        <div class="card-header">
+                            <div class="pokemon-image">
+                                <el-image style="width: 60px; height: 60px" :src="item.imgUrl" fit="contain"></el-image>
+                            </div>
+                            <div class="pokemon-name">{{ item.name }}</div>
+                        </div>
+                        
+                        <div class="desktop-card-content">
+                            <div class="desktop-section">
+                                <div class="section-title">属性</div>
+                                <div class="section-content">
+                                    <el-tag v-for="(type, idx) in item.type" :key="'type-'+idx" 
+                                        size="small" :type="type.col" class="info-tag">
+                                        {{ type.key }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div class="desktop-section">
+                                <div class="section-title">种族值</div>
+                                <div class="section-content">
+                                    <el-tag size="small" :type="item.pow.col" class="info-tag">
+                                        {{ ValueText(item.pow.key, item.pow.value) }}
+                                    </el-tag>
+                                    <el-tag v-if="settings.battleOpen" size="small" :type="item.speed.col" class="info-tag">
+                                        速度:{{ ValueText(item.speed.key, item.speed.value) }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div v-if="settings.battleOpen" class="desktop-section">
+                                <div class="section-title">攻防</div>
+                                <div class="section-content">
+                                    <el-tag size="small" :type="item.attack.col" class="info-tag">
+                                        {{ item.attack.key }}
+                                    </el-tag>
+                                    <el-tag size="small" :type="item.defense.col" class="info-tag">
+                                        {{ item.defense.key }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div class="desktop-section">
+                                <div class="section-title">世代</div>
+                                <div class="section-content">
+                                    <el-tag size="small" :type="item.gen.col" class="info-tag">
+                                        {{ ValueText(item.gen.key, item.gen.value) }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div class="desktop-section">
+                                <div class="section-title">特性</div>
+                                <div class="section-content">
+                                    <el-tag v-for="(ability, idx) in item.ability" :key="'ability-'+idx" 
+                                        size="small" :type="ability.col" class="info-tag">
+                                        {{ ability.key }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div class="desktop-section">
+                                <div class="section-title">进化</div>
+                                <div class="section-content">
+                                    <el-tag v-if="item.evo.key != null" size="small" :type="item.evo.col" class="info-tag">
+                                        {{ item.evo.key }}
+                                    </el-tag>
+                                    <el-tag size="small" :type="item.stage.col" class="info-tag">
+                                        {{ item.stage.key }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div v-if="settings.shapeOpen" class="desktop-section">
+                                <div class="section-title">外形</div>
+                                <div class="section-content">
+                                    <el-tag size="small" :type="item.shape.col" class="info-tag">
+                                        {{ item.shape.key }}
+                                    </el-tag>
+                                    <el-tag size="small" :type="item.col.col" class="info-tag">
+                                        {{ item.col.key }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div v-if="settings.catchOpen" class="desktop-section">
+                                <div class="section-title">蛋组/捕获率</div>
+                                <div class="section-content">
+                                    <el-tag v-for="(egg, idx) in item.egg" :key="'egg-'+idx" 
+                                        size="small" :type="egg.col" class="info-tag">
+                                        {{ egg.key }}
+                                    </el-tag>
+                                    <el-tag size="small" :type="item.catrate.col" class="info-tag">
+                                        捕获率:{{ ValueText(item.catrate.key, item.catrate.value) }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                            
+                            <div class="desktop-section">
+                                <div class="section-title">其他</div>
+                                <div class="section-content">
+                                    <el-tag v-for="(label, idx) in item.label" :key="'label-'+idx" 
+                                        size="small" :type="label.col" class="info-tag">
+                                        {{ label.key }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </el-main>
     </el-container>
@@ -324,43 +411,38 @@
                     shapeOpen:false,
                     catchOpen:false,
                 },
+                windowWidth: window.innerWidth,
+                isMobile: window.innerWidth <= 768
             }
         },
         methods:{
             async createFilter(queryString) {
-                if (this.nameList.length === 0) {  // 修复判断空数组的正确方式
+                if (this.nameList.length === 0) {
                     await this.loadName();
                 }
                 const query = queryString.toLowerCase();
                 
-                return (item) => {  // 参数应为单个元素，而非整个数组
-                    // 添加容错处理确保 value 存在
+                return (item) => {
                     const target = (item.value || '').toLowerCase();
                     let qIndex = 0, tIndex = 0;
                     
-                    // 子序列匹配核心逻辑
                     while (qIndex < query.length && tIndex < target.length) {
                     if (query[qIndex] === target[tIndex]) qIndex++;
                     tIndex++;
                     }
-                    return qIndex === query.length; // 是否找到全部字符
+                    return qIndex === query.length;
                 };
-                },
+            },
 
-                // 修改后的 querySearch 方法
-                querySearch(queryString, cb) {
-                // 保留原始引用避免异步问题
-                const filterFn = this.createFilter(queryString);
-                
-                // 处理异步过滤
-                Promise.resolve(filterFn).then(filter => {
+            querySearch(queryString, cb) {
+                Promise.resolve(this.createFilter(queryString)).then(filter => {
                     const results = queryString 
                     ? this.nameList.filter(filter) 
                     : this.nameList;
-                    cb(results);  // 注意保持回调参数格式
+                    cb(results);
                 }).catch(err => {
                     console.error('Filter error:', err);
-                    cb([]);  // 异常时返回空数组
+                    cb([]);
                 });
             },
             async loadName(){
@@ -514,7 +596,7 @@
                         this.temp.evo={}
                         this.temp.evo.key=data.evo.key
                         if(this.temp.evo.key!=null)
-                            this.temp.evo.key=truncateString(this.temp.evo.key,9)
+                            this.temp.evo.key=truncateString(this.temp.evo.key,this.isMobile ? 6 : 12)
                         if(data.evo.value=="far")
                             this.temp.evo.col="info"
                         else if(data.evo.value=="near")
@@ -566,7 +648,6 @@
                         else 
                             this.temp.col.col="info"
 
-
                         // 其他标签
                         this.temp.label=[]
                         data.label.forEach((label,index)=>{
@@ -599,6 +680,9 @@
 
                         this.tableData.push(this.temp);
                         this.times++;
+                        
+                        // 清空输入框
+                        this.input = "";
 
                         // 猜测结束
                         if(this.temp.answer=='True'||this.times==this.settings.maxguess){
@@ -635,7 +719,6 @@
                     });
                     const data=this.tempdata
                     console.log(data)
-
 
                     try{
                         const options = {
@@ -676,31 +759,34 @@
                         this.reply.label="无"
 
                     const h = this.$createElement;
+                    
+                    // 修复结果弹窗显示
                     MessageBox({
                         title: '游戏结束',
-                        message: h('el-container', null, [
-                            h('el-aside',{attrs:{style: 'width:100px'}},[
-                            h('img', {
-                            attrs: {
-                                src: this.temp.imgUrl,
-                                style: 'width: 100px; height: 100px;'
-                            }
-                            })]),
-                            h('el-container',null,[
-                                h('el-header',null,[
-                                    h('p',"宝可梦:"+data.name)
-                                ]),
-                                h('el-main',null,[
-                                    h('p',"属性:"+this.reply.type),
-                                    h('p',"种族值:"+data.pow.key),
-                                    h('p',"特性:"+this.reply.ability),
-                                    h('p',"其他标签:"+this.reply.label)
-                                ])
+                        message: h('div', { class: 'result-container' }, [
+                            h('div', { class: 'result-image' }, [
+                                h('img', {
+                                    attrs: {
+                                        src: this.temp.imgUrl,
+                                        style: 'width: 100px; height: 100px;'
+                                    }
+                                })
+                            ]),
+                            h('div', { class: 'result-info' }, [
+                                h('p', { class: 'result-name' }, "宝可梦: " + data.name),
+                                h('p', { class: 'result-detail' }, "属性: " + this.reply.type),
+                                h('p', { class: 'result-detail' }, "种族值: " + data.pow.key),
+                                h('p', { class: 'result-detail' }, "特性: " + this.reply.ability),
+                                h('p', { class: 'result-detail' }, "其他标签: " + this.reply.label)
                             ])
                         ]),
                         confirmButtonText: '下一把',
-                    }).then(()=>{})
-                    .catch(()=>{});
+                        width: this.isMobile ? '90%' : '50%'
+                    }).then(()=>{
+                        // 可以在这里添加下一步操作
+                    }).catch(()=>{
+                        // 处理取消操作
+                    });
                 }catch(error){
                     console.error(error)
                 }
@@ -742,6 +828,10 @@
                 }catch(e){
                     console.error("设置加载失败：",e);
                 }
+            },
+            handleResize() {
+                this.windowWidth = window.innerWidth;
+                this.isMobile = window.innerWidth <= 768;
             }
         },
         computed:{
@@ -749,37 +839,295 @@
         mounted() {
             this.loadSettings();
             this.Restart();
+            window.addEventListener('resize', this.handleResize);
+        },
+        beforeDestroy() {
+            window.removeEventListener('resize', this.handleResize);
         }
     }
 </script>
 
 <style>
-
-    .guess{
-        margin-top: -2%;
+    .guess {
+        margin-top: 20px;
         margin-left: 5%;
         margin-right: 5%;
-        font-size: 3rem;
     }
-    .inputlayout{
-        display: flex;
+    
+    .times {
+        font-size: 1.2rem;
+        margin: 20px 0;
         text-align: center;
-        justify-content: center;
     }
-    .inputbox{
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        width: 60%;
-    }
-    .times{
-        font-size: 1.5rem;
-    }
-    .setting{
+    
+    .setting {
         margin-left: 5%;
         margin-right: 5%;
         display: flex;
         flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* 输入区域居中优化 */
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto 20px;
+    }
+    
+    .input-row, .button-row {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .button-row {
+        margin-top: 10px;
+    }
+    
+    /* 卡片基础样式 */
+    .pokemon-cards {
+        display: flex;
+        margin-bottom: 30px;
+    }
+    
+    .pokemon-card {
+        border: 1px solid #EBEEF5;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .pokemon-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #EBEEF5;
+    }
+    
+    .pokemon-image {
+        margin-right: 15px;
+    }
+    
+    .pokemon-name {
+        font-weight: bold;
+    }
+    
+    .section-title {
+        color: #606266;
+        font-weight: 500;
+    }
+    
+    .section-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .info-tag {
+        margin: 2px;
+    }
+    
+    /* 移动端卡片样式 */
+    .mobile-cards {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .mobile-cards .pokemon-card {
+        padding: 12px;
+    }
+    
+    .mobile-cards .card-header {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .mobile-cards .pokemon-name {
+        font-size: 16px;
+    }
+    
+    .mobile-cards .card-section {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #EBEEF5;
+    }
+    
+    .mobile-cards .card-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .mobile-cards .section-title {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    /* 桌面端卡片样式 - 水平布局 */
+    .desktop-cards {
+        flex-direction: column;
+        gap: 20px;
+        margin: 0 auto;
+    }
+    
+    .desktop-card {
+        display: flex;
+        padding: 0;
+        width: 100%;
+    }
+    
+    .desktop-card .card-header {
+        flex-direction: column;
+        padding: 15px;
+        border-bottom: none;
+        border-right: 1px solid #EBEEF5;
+        align-items: center;
+        justify-content: center;
+        min-width: 100px;
+    }
+    
+    .desktop-card .pokemon-image {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .desktop-card .pokemon-name {
+        font-size: 16px;
+        text-align: center;
+    }
+    
+    .desktop-card-content {
+        display: flex;
+        flex: 1;
+        padding: 15px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+    
+    .desktop-section {
+        margin: 0 15px;
+        min-width: 100px;
+        text-align: center;
+    }
+    
+    .desktop-section .section-title {
+        font-size: 14px;
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #EBEEF5;
+        padding-bottom: 5px;
+    }
+    
+    .desktop-section .section-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         gap: 8px;
+    }
+    
+    /* 修复滚动条样式 */
+    .desktop-card-content::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .desktop-card-content::-webkit-scrollbar-thumb {
+        background-color: #c0c4cc;
+        border-radius: 3px;
+    }
+    
+    .desktop-card-content::-webkit-scrollbar-track {
+        background-color: #f5f7fa;
+    }
+    
+    /* 按钮样式优化 */
+    .button-col {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .action-button {
+        width: 100%;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* 按钮文字居中修复 */
+    .el-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .el-button span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* 结果对话框样式 */
+    .result-container {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+    }
+    
+    .result-image {
+        margin-right: 20px;
+    }
+    
+    .result-info {
+        flex: 1;
+    }
+    
+    .result-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+    
+    .result-detail {
+        font-size: 15px;
+        margin: 8px 0;
+    }
+    
+    /* 响应式调整 */
+    @media screen and (max-width: 768px) {
+        .guess {
+            margin-left: 2%;
+            margin-right: 2%;
+        }
+        
+        .times {
+            font-size: 1rem;
+        }
+        
+        .result-container {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .result-image {
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+    }
+    
+    /* 优化头部按钮 */
+    .header-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+    
+    .header-buttons .el-button {
+        margin-left: 10px;
     }
 </style>
