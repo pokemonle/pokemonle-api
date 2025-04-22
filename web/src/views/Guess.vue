@@ -88,6 +88,7 @@
                             :max="20"
                             :min="3"
                             :disabled="this.settings.autodif"
+                            :show-tooltip="false"
                             style="width: 100%">
                             </el-slider>
                         </div>
