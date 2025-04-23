@@ -88,6 +88,7 @@
                             :max="20"
                             :min="3"
                             :disabled="this.settings.autodif"
+                            :show-tooltip="false"
                             style="width: 100%">
                             </el-slider>
                         </div>
@@ -1799,5 +1800,35 @@
         .action-button {
             height: 44px; /* 移动端增大按钮高度 */
         }
+    }
+    /* 移动端按钮样式优化 */
+    @media screen and (max-width: 768px) {
+    .button-row {
+        flex-wrap: wrap; /* 允许按钮换行，避免挤压 */
+        gap: 10px; /* 增加按钮间距 */
+    }
+
+    .button-col {
+        flex: 0 0 45%; /* 每列占45%宽度，确保两行两列布局 */
+        max-width: 45%; /* 限制最大宽度 */
+    }
+
+    .action-button {
+        height: 48px; /* 增大按钮高度 */
+        font-size: 14px; /* 减小字体大小以适应按钮 */
+        padding: 0 10px; /* 调整内边距 */
+        white-space: normal; /* 允许文字换行 */
+        line-height: 1.2; /* 优化文字行高 */
+    }
+
+    /* 确保按钮文字居中且不被截断 */
+    .el-button span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+    }
     }
 </style>
