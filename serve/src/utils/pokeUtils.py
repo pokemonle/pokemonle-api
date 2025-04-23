@@ -104,8 +104,13 @@ def getPokeByDf(PokeList,hard,ngen):
             if(ngen==0):
                 break
             gen=PokeList[ans]["generation"]
-            if(Gens.index(gen)==ngen-1):
-                break
+            if(ngen<=9):
+                if(Gens.index(gen)==ngen-1):
+                    break
+            else:
+                idx=Gens.index(gen)
+                if((((ngen-10)>>idx)&1)==1):
+                    break
     return ans
 
 def getPokeByName(PokeList,name):
@@ -331,6 +336,12 @@ def ComparePoke(PokeList,Id1,Id2):
         ans["gen"]={"key":PokeList[Id2]["generation"],"value":"low"}
     else:
         ans["gen"]={"key":PokeList[Id2]["generation"],"value":"high"}
+    if(Gen1==Gen2):
+        ans["gen"]["dis"]="equiv"
+    if(abs(Gen1-Gen2)<=1):
+        ans["gen"]["dis"]="near"
+    else:
+        ans["gen"]["dis"]="far"
     
     #特性信息
     Ability1=AbilityGet(Info1)
