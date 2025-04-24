@@ -2,12 +2,17 @@ import VueRouter from 'vue-router';
 import Vue from 'vue';
 
 import Guess from '../views/Guess.vue';
+import dualCreate from "@/views/dualCreate.vue";
+import dualGuess from "@/views/dualGuess.vue";
+
 Vue.use(VueRouter);
 
-const router=new VueRouter({
-    routes:[
-        {path:'/Guess',name:'Guess',component:Guess},
-        {path:'*',component:Guess}
+const router = new VueRouter({
+    routes: [
+        {path: '/Guess', name: 'Guess', component: Guess},
+        {path: '/dualCreate', name: 'dualCreate', component: dualCreate},
+        {path: '/dualGuess', name: 'dualGuess', component: dualGuess},
+        {path: '*', component: Guess}
     ]
 })
 
