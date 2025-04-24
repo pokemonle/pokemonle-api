@@ -393,7 +393,15 @@ export default {
         "reverseDisplay": this.settings.reverseDisplay,
         "maxGuess": this.settings.maxguess,
       }
-      this.socket.emit("room_game_init", {"room": this.cur_room})
+      var gen = 10;
+      for (let i = 0; i < 9; i++)
+        if (this.settings.selectedGens[i]) gen += (1 << i);
+      const dif = this.hards.indexOf(this.settings.hardid);
+      this.socket.emit("room_game_init", {
+        "difficulty": dif,
+        "gen": gen,
+        "room": this.room
+      })
       if (!this.$route.path.includes("dualGuess")) {
         this.$router.push({
           name: 'dualGuess',

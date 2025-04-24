@@ -1127,7 +1127,6 @@ export default {
         }
 
         this.$confirm(resultContent, dialogTitle, {
-          confirmButtonText: '再来一次',
           cancelButtonText: '返回',
           customClass: 'result-dialog',
           dangerouslyUseHTMLString: true,
@@ -1136,11 +1135,6 @@ export default {
           closeOnClickModal: false,
           closeOnPressEscape: false,
           distinguishCancelAndClose: true,
-          callback: action => {
-            if (action === 'confirm') {
-              this.Restart();
-            }
-          }
         });
       } catch (error) {
         console.error(error);

@@ -131,7 +131,6 @@ def handle_join(data):
         join_room(room)
         hostname = str(redis.hget(room, "hostname").decode('utf-8'))
         emit("join_event", {"message": "join", 'username': username, 'hostname': hostname, 'room': room}, to=room)
-        print(getRealSettings(redis, room))
         emit("setting_event", getRealSettings(redis, room))
 
 
@@ -162,8 +161,8 @@ def handle_config(data):
 
 @socketio.on("room_game_init")
 def room_task_init(data):
-    hard = request.args.get('difficulty', default=0, type=int)
-    gen = request.args.get('gen', default=0, type=int)
+    hard = data["difficulty"]
+    gen = data["gen"]
     room = data['room']
     redis.hset(room, "answered", 0)
     redis.hset(room, 'guess', str(pokeUtils.getPokeByDf(PokeList, hard, gen)))
