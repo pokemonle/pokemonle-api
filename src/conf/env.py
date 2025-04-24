@@ -1,1 +1,1 @@
-DB_CONNECTION = "sqlite:///./test.db"
+DB_CONNECTION = "sqlite:///./sqlite.db"

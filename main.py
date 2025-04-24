@@ -1,12 +1,32 @@
 import os
+import subprocess
 
 import uvicorn
+from typing import Any, AsyncGenerator
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from router import language, gen, version, versionGroup, ability, pokemon, game
 
-api = FastAPI(title="pokemonle api")
+
+async def run_database_migrations():
+    """Run database migrations by calling alembic."""
+    try:
+        db_dir = os.path.join(os.path.dirname(__file__), "src", "db")
+        subprocess.run(["alembic", "upgrade", "head"], check=True, cwd=db_dir)
+    except subprocess.CalledProcessError as e:
+        # logger.error(f"Failed to run database migrations: {e}")
+        raise
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
+    await run_database_migrations()
+
+    yield
+
+
+api = FastAPI(title="pokemonle api", lifespan=lifespan)
 api.include_router(language.router)
 api.include_router(gen.router)
 api.include_router(version.router)
@@ -28,12 +48,14 @@ api.add_middleware(
 async def index() -> str:
     return "Hello Pokemonle"
 
+
 class SPAStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
         response = await super().get_response(path, scope)
         if response.status_code == 404:
             response = await super().get_response('index.html', scope)
         return response
+
 
 app = FastAPI()
 app.mount("/api", api)

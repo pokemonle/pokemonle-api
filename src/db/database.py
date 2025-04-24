@@ -3,7 +3,7 @@ from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-url = "sqlite:///./src/db/test.db"
+url = "sqlite:///./src/db/sqlite.db"
 engine = create_engine(url)
 DBSession = sessionmaker(bind=engine)
 
