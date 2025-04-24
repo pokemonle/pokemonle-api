@@ -557,22 +557,12 @@ export default {
         this.times2 = 0
         this.gameover = false
         this.settings.battleOpen = false
-        this.$notify({
-          title: '提示',
-          message: '房间已解散',
-          type: "info"
-        });
       } else {
         this.username2 = ""
         this.times = 0
         this.times2 = 0
         this.gameover = false
         this.settings.battleOpen = false
-        this.$notify({
-          title: '提示',
-          message: data.username + '已离开房间',
-          type: "info"
-        });
       }
     })
     this.socket.on("setting_event", (data) => {
