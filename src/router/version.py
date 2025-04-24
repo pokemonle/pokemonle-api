@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
-from db.database import DBSession
-from db.model import Version,VersionName
+from sqlalchemy.orm import Session
+from db.database import get_db
+from db.model import Version, VersionName
 
 router = APIRouter(prefix="/version", tags=["version"])
 
+
 @router.get('')
-def index(language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Version, VersionName.name)
         .join(VersionName, Version.id == VersionName.version_id)
@@ -16,9 +17,9 @@ def index(language: int = Query(12, alias='lang', ge=1, le=12)):
     )
     return JSONResponse(content=[{**g.to_dict(), 'name': name} for g, name in data])
 
+
 @router.get("/{version_id}")
-def get(version_id: int, language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def get(version_id: int, language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Version, VersionName.name)
         .join(VersionName, Version.id == VersionName.version_id)

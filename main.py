@@ -1,63 +1,43 @@
+import os
+
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from router import language, gen, version, versionGroup, ability, pokemon, game
 
-app = FastAPI()
-app.include_router(language.router)
-app.include_router(gen.router)
-app.include_router(version.router)
-app.include_router(versionGroup.router)
-app.include_router(ability.router)
-app.include_router(pokemon.router)
-app.include_router(game.router)
+api = FastAPI(title="pokemonle api")
+api.include_router(language.router)
+api.include_router(gen.router)
+api.include_router(version.router)
+api.include_router(versionGroup.router)
+api.include_router(ability.router)
+api.include_router(pokemon.router)
+api.include_router(game.router)
+
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-@app.get("/", include_in_schema=False)
+@api.get("/", include_in_schema=False)
 async def index() -> str:
     return "Hello Pokemonle"
 
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 404:
+            response = await super().get_response('index.html', scope)
+        return response
 
-# app=Flask(__name__)
-# app.register_blueprint(nameRouter, url_prefix='')
-#
-# @app.route('/debug',methods=["GET"])
-# def debug():
-#     return "debug"
-#
-# @app.route('/init',methods=["GET"])
-# def initget():
-#     hard=request.args.get('difficulty', default=0, type=int)
-#     gen=request.args.get('gen', default=0, type=int)
-#     return str(pokeUtils.getPokeByDf(PokeList, hard, gen))
-#
-#
-#
-# @app.route('/guess',methods=["GET"])
-# def guess():
-#     answer=request.args.get('answer', default=0, type=int)
-#     guess_id=request.args.get('guess', default=0, type=str)
-#     guess= pokeUtils.getPokeByName(PokeList, guess_id)
-#     if(answer==None or guess==None):
-#         return "guess name error"
-#     ans= pokeUtils.ComparePoke(PokeList, answer, guess)
-#     return jsonify(ans)
-#
-# @app.route('/getimage',methods=["GET"])
-# def getimage():
-#     pokemon=request.args.get('pokemon', default=0, type=str)
-#     Id= pokeUtils.getPokeByName(PokeList, pokemon)
-#     path=PokeList[Id]["index"]+'-'+PokeList[Id]["name"]
-#     print(path)
-#     return send_file(dataUtils.SrcPath() + f'/data/images/official/{path}.png', mimetype='image/jpeg')
-#
-# @app.route('/getanswer',methods=["GET"])
-# def getanswer():
-#     pokemon=request.args.get('pokemon', default=0, type=int)
-#     answer= pokeUtils.getPokeByName(PokeList, NameList[pokemon])
-#     if(answer==None):
-#         return "guess name error"
-#     ans= pokeUtils.ComparePoke(PokeList, answer, answer)
-#     return jsonify(ans)
+app = FastAPI()
+app.mount("/api", api)
+app.mount("/", SPAStaticFiles(directory="dist", html=True), name="static")
 
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=9000)

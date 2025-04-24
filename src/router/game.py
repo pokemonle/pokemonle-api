@@ -3,7 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
-from db.database import DBSession
+from sqlalchemy.orm import Session
+from db.database import get_db
 from db.model import PokemonSpecies, PokemonSpeciesName
 from utils.gen import decode_gen
 from utils.compare import compare_pokemon
@@ -15,9 +16,9 @@ router = APIRouter(prefix="/game", tags=["game"])
 def init(
         encode: Annotated[int, Query(alias="gen")],
         difficulty=0,
+        db: Session = Depends(get_db)
 ):
     if difficulty == 0:
-        db = DBSession()
         gens = decode_gen(encode)
         pokemon_list = (
             db.query(PokemonSpecies)
@@ -37,8 +38,8 @@ def check_answer(
         answer: int,
         guess: str,
         lang: Annotated[int, Query(ge=1, le=12)] = 12,
+        db: Session = Depends(get_db)
 ):
-    db = DBSession()
     # find pokemon by guess name
     guess_pokemon_name = (
         db.query(PokemonSpeciesName)
@@ -68,9 +69,7 @@ def check_answer(
             status_code=404)
 
     return {
-        **compare_pokemon(db,guess_pokemon, answer_pokemon, lang),
+        **compare_pokemon(db, guess_pokemon, answer_pokemon, lang),
         "name": guess,
         "index": guess_pokemon.id,
     }
-
-

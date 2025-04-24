@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
-from db.database import DBSession
+from sqlalchemy.orm import Session
+from db.database import get_db
 from db.model import Language, LanguageName
 
 router = APIRouter(prefix="/lang", tags=["lang"])
 
 
 @router.get('')
-def index(language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Language, LanguageName.name)
         .join(LanguageName, Language.id == LanguageName.language_id)
@@ -17,9 +17,9 @@ def index(language: int = Query(12, alias='lang', ge=1, le=12)):
     )
     return JSONResponse(content=[{**g.to_dict(), 'name': name} for g, name in data])
 
+
 @router.get("/{language_id}")
-def get(language_id: int, language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def get(language_id: int, language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Language, LanguageName.name)
         .join(LanguageName, Language.id == LanguageName.language_id)

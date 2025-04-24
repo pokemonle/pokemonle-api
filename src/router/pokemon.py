@@ -1,15 +1,15 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
-from db.database import DBSession
+from sqlalchemy.orm import Session
+from db.database import get_db
 from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonStat, StatName
 
 router = APIRouter(prefix="/pokemon", tags=["pokemon"])
 
 
 @router.get('')
-def index(language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Pokemon, PokemonSpeciesName.name)
         .join(PokemonSpecies, Pokemon.species_id == PokemonSpecies.id)
@@ -24,14 +24,13 @@ def index(language: int = Query(12, alias='lang', ge=1, le=12)):
 def get_name(
         lang: Annotated[int, Query(ge=1, le=12)] = 12,
         search: Annotated[str | None, Query(min_length=1)] = None,
+        db: Session = Depends(get_db)
 ):
-    db = DBSession()
     query = db.query(PokemonSpeciesName.name).filter(PokemonSpeciesName.local_language_id == lang)
     if search:
         query = query.filter(PokemonSpeciesName.name.like(f"%{search}%"))
     data = [row[0] for row in query.all()]
     return JSONResponse(content=data)
-
 
 
 @router.get('/{pokemon_id}')
