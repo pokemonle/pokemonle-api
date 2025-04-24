@@ -580,7 +580,7 @@
 <script>
 import axios from "axios";
 import { Intro, About } from "@/components";
-import { listPokemonName } from "@/api";
+import { listPokemonName, GameInit, GameGuess, GameAnswer } from "@/api";
 
 function truncateString(str, maxLength) {
   if (str.length > maxLength) {
@@ -750,12 +750,7 @@ export default {
         console.error("加载名称失败:", error);
         // 如果本地加载失败，尝试通过API获取
         try {
-          const options = {
-            method: "GET",
-            url: `${process.env.VUE_APP_API_BASE_URL}/nameget`,
-          };
-          await axios
-            .request(options)
+          await listPokemonName()
             .then((response) => {
               this.tempdata = response.data;
               this.nameList = this.tempdata.map((item) => ({ value: item }));
@@ -778,23 +773,16 @@ export default {
       this.surrendered = false;
       sessionStorage.removeItem("answer");
       this.tableData = [];
-      console.log(`${process.env.VUE_APP_API_BASE_URL}/initget`);
       try {
         var gen = 10;
         for (let i = 0; i < 9; i++)
           if (this.settings.selectedGens[i]) gen += 1 << i;
         const dif = this.hards.indexOf(this.settings.hardid);
-        const options = {
-          method: "GET",
-          url: `${process.env.VUE_APP_API_BASE_URL}/initget`,
-          params: {
-            difficulty: dif,
-            gen: gen,
-          },
-        };
 
-        await axios
-          .request(options)
+        await GameInit({
+          difficulty: dif,
+          gen: gen,
+        })
           .then((response) => {
             this.tempdata = response.data;
           })
@@ -818,16 +806,10 @@ export default {
       const answer = sessionStorage.getItem("answer");
       if (answer == null) return;
       try {
-        const options = {
-          method: "GET",
-          url: `${process.env.VUE_APP_API_BASE_URL}/guess`,
-          params: {
-            answer: answer,
-            guess: this.input,
-          },
-        };
-        await axios
-          .request(options)
+        await GameGuess({
+          answer: answer,
+          guess: this.input,
+        })
           .then((response) => {
             this.tempdata = response.data;
           })
@@ -1056,15 +1038,9 @@ export default {
       const answer = sessionStorage.getItem("answer");
       if (answer == null) return;
       try {
-        const options = {
-          method: "GET",
-          url: `${process.env.VUE_APP_API_BASE_URL}/getanswer`,
-          params: {
-            pokemon: answer,
-          },
-        };
-        await axios
-          .request(options)
+        await GameAnswer({
+          pokemon: answer,
+        })
           .then((response) => {
             this.tempdata = response.data;
           })

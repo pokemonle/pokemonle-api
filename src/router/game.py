@@ -73,3 +73,35 @@ def check_answer(
         "name": guess,
         "index": guess_pokemon.id,
     }
+
+
+@router.get('/answer')
+def get_answer(
+        pokemon_id: Annotated[int, Query(alias="pokemon")],
+        lang: Annotated[int, Query(ge=1, le=12)] = 12,
+        db: Session = Depends(get_db)
+):
+    pokemon = (
+        db.query(PokemonSpecies)
+        .filter(PokemonSpecies.id == pokemon_id)
+        .first()
+    )
+
+    name = (
+        db.query(PokemonSpeciesName.name)
+        .filter(PokemonSpeciesName.pokemon_species_id == pokemon_id)
+        .filter(PokemonSpeciesName.local_language_id == lang)
+        .first()
+    )
+
+    if pokemon is None:
+        return JSONResponse(content={"error": f"Pokemon {pokemon_id} not found"}, status_code=404)
+
+    if name is None:
+        return JSONResponse(content={"error": f"Pokemon {pokemon_id} name not found"}, status_code=404)
+
+    return {
+        **compare_pokemon(db, pokemon, pokemon, lang),
+        "name": name[0],
+        "index": pokemon_id,
+    }
