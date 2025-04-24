@@ -2,35 +2,57 @@
   <el-container>
     <el-header>
       <el-row type="flex" justify="space-between" align="middle">
-        <el-col :span="24" style="text-align: right;">
+        <el-col :span="24" style="text-align: right">
           <div class="header-buttons">
             <!-- 新增：夜间/日间模式切换按钮 -->
-            <el-button circle :icon="darkMode ? 'el-icon-sunny' : 'el-icon-moon'" @click="toggleDarkMode"></el-button>
-            <el-button circle icon="el-icon-setting" @click="settingVisble=true"></el-button>
-            <el-button circle icon="el-icon-question" @click="introVisble=true"></el-button>
-            <el-button circle icon="el-icon-user" @click="authorVisble=true"></el-button>
+            <el-button
+              circle
+              :icon="darkMode ? 'el-icon-sunny' : 'el-icon-moon'"
+              @click="toggleDarkMode"
+            ></el-button>
+            <el-button
+              circle
+              icon="el-icon-setting"
+              @click="settingVisble = true"
+            ></el-button>
+            <el-button
+              circle
+              icon="el-icon-question"
+              @click="introVisble = true"
+            ></el-button>
+            <el-button
+              circle
+              icon="el-icon-user"
+              @click="authorVisble = true"
+            ></el-button>
           </div>
         </el-col>
       </el-row>
 
       <!-- 设置对话框 -->
       <el-dialog
-          title="设置"
-          :visible.sync="settingVisble"
-          :width="isMobile ? '90%' : '50%'"
-          :show-close="false"
-          :close-on-click-modal="false"
-          :close-on-press-escape="false"
-          custom-class="enhanced-dialog">
+        title="设置"
+        :visible.sync="settingVisble"
+        :width="isMobile ? '90%' : '50%'"
+        :show-close="false"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        custom-class="enhanced-dialog"
+      >
         <div class="setting">
           <div class="setting-section">
             <div class="setting-title">游戏模式</div>
-            <el-select v-model="settings.hardid" placeholder="请选择" size="small" style="width: 50%">
+            <el-select
+              v-model="settings.hardid"
+              placeholder="请选择"
+              size="small"
+              style="width: 50%"
+            >
               <el-option
-                  v-for="item in this.hards"
-                  :key="item"
-                  :label="item"
-                  :value="item"
+                v-for="item in this.hards"
+                :key="item"
+                :label="item"
+                :value="item"
               >
               </el-option>
             </el-select>
@@ -41,10 +63,11 @@
             <div class="gen-selection">
               <div class="gen-checkboxes">
                 <el-checkbox
-                    v-for="(gen, index) in genOptions"
-                    :key="gen.value"
-                    v-model="settings.selectedGens[index]"
-                    @change="handleGenChange(index)">
+                  v-for="(gen, index) in genOptions"
+                  :key="gen.value"
+                  v-model="settings.selectedGens[index]"
+                  @change="handleGenChange(index)"
+                >
                   {{ gen.label }}
                 </el-checkbox>
               </div>
@@ -55,20 +78,24 @@
             <div class="setting-title">显示信息</div>
             <div class="switch-group">
               <el-switch
-                  v-model="settings.battleOpen"
-                  active-text="显示更多种族值信息">
+                v-model="settings.battleOpen"
+                active-text="显示更多种族值信息"
+              >
               </el-switch>
               <el-switch
-                  v-model="settings.shapeOpen"
-                  active-text="显示更多外形信息">
+                v-model="settings.shapeOpen"
+                active-text="显示更多外形信息"
+              >
               </el-switch>
               <el-switch
-                  v-model="settings.catchOpen"
-                  active-text="显示蛋组/捕获率信息">
+                v-model="settings.catchOpen"
+                active-text="显示蛋组/捕获率信息"
+              >
               </el-switch>
               <el-switch
-                  v-model="settings.showGenArrow"
-                  active-text="开启世代箭头">
+                v-model="settings.showGenArrow"
+                active-text="开启世代箭头"
+              >
               </el-switch>
             </div>
           </div>
@@ -76,114 +103,43 @@
           <div class="setting-section">
             <div class="setting-title">卡片展示顺序</div>
             <el-switch
-                v-model="settings.reverseDisplay"
-                active-text="猜测反向显示"
-                inactive-text="猜测正向显示">
+              v-model="settings.reverseDisplay"
+              active-text="猜测反向显示"
+              inactive-text="猜测正向显示"
+            >
             </el-switch>
           </div>
 
-          <el-switch
-              v-model="settings.cheatOpen"
-              active-text="小小的恶作剧">
+          <el-switch v-model="settings.cheatOpen" active-text="小小的恶作剧">
           </el-switch>
-          <br>
+          <br />
 
           <div class="block">
-            <span class="demonstration">猜测次数：{{ this.settings.maxguess }}</span>
+            <span class="demonstration"
+              >猜测次数：{{ this.settings.maxguess }}</span
+            >
             <el-slider
-                v-model="settings.maxguess"
-                :step="1"
-                :max="15"
-                :min="3"
-                :show-tooltip="false"
-                style="width: 100%">
+              v-model="settings.maxguess"
+              :step="1"
+              :max="15"
+              :min="3"
+              :show-tooltip="false"
+              style="width: 100%"
+            >
             </el-slider>
           </div>
         </div>
 
         <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" @click="CloseSetting()">确 定</el-button>
-                </span>
+          <el-button type="primary" @click="CloseSetting()">确 定</el-button>
+        </span>
       </el-dialog>
 
       <!-- 规则介绍对话框 -->
-      <el-dialog
-          title="规则介绍"
-          :visible.sync="introVisble"
-          :width="isMobile ? '90%' : '50%'"
-          :show-close="false"
-          custom-class="enhanced-dialog">
-        <div class="intro-content">
-          <p>输入一个宝可梦进行猜测。</p>
-          <p>每次猜测后，你会获得你输入的宝可梦的信息。</p>
-
-          <div class="hint-section">
-            <div class="hint-item">
-              <el-tag type="success" size="small">绿色高亮</el-tag>
-              <span>表示该信息与你需要猜测的宝可梦完全相同</span>
-            </div>
-            <div class="hint-item">
-              <el-tag type="warning" size="small">黄色高亮</el-tag>
-              <span>表示该信息与你需要猜测的宝可梦比较接近</span>
-            </div>
-            <div class="hint-item">
-              <span>"↑": 应该往高了猜；"↓": 应该往低了猜</span>
-            </div>
-          </div>
-          <p>简单模式只会保留较为热门或携带其他标签的宝可梦。</p>
-          <p><strong>世代选择：</strong>可以选择单个或多个世代组合进行游戏。</p>
-          <p><strong>随机开局：</strong>帮你随机选择一个当前世代范围内的宝可梦作为第一次猜测。</p>
-        </div>
-
-        <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" @click="introVisble=false">确 定</el-button>
-                </span>
-      </el-dialog>
+      <Intro :visible.sync="introVisble" />
 
       <!-- 制作人员对话框（美化版） -->
-      <el-dialog
-          title="制作人员"
-          :visible.sync="authorVisble"
-          :width="isMobile ? '90%' : '50%'"
-          :show-close="false"
-          custom-class="enhanced-dialog">
-        <div class="author-content">
-          <div class="author-links">
-            <el-button type="primary" size="small"
-                       @click="openLink('https://www.bilibili.com/video/BV1XmLFz5E7Y/?spm_id_from=333.1387.homepage.video_card.click')">
-              视频链接
-            </el-button>
-            <el-button type="info" size="small" @click="openLink('https://space.bilibili.com/38187048')">
-              作者空间
-            </el-button>
-            <el-button type="success" size="small" @click="openLink('https://github.com/QuantAskk/pokemonle')">
-              项目源地址
-            </el-button>
-          </div>
-          <div class="author-cards">
-            <el-card :body-style="{ padding: '0px' }" class="author-card">
-              <img src="@/assets/img/QAHead.jpg" class="author-avatar">
-              <div class="author-info">
-                <span>QuantAsk</span>
-                <br>
-                <el-tag size="mini" type="info">作者</el-tag>
-              </div>
-            </el-card>
-            <el-card :body-style="{ padding: '0px' }" class="author-card">
-              <img src="@/assets/img/GengerHead.jpg" class="author-avatar">
-              <div class="author-info">
-                <span>流明Luminous</span>
-                <br>
-                <el-tag size="mini" type="info">UI优化</el-tag>
-              </div>
-            </el-card>
-          </div>
-        </div>
-
-        <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" @click="authorVisble=false">确 定</el-button>
-                </span>
-      </el-dialog>
+      <About :visible.sync="authorVisble" />
     </el-header>
     <el-main>
       <div class="guess">
@@ -193,42 +149,64 @@
             <el-col :span="isMobile ? 24 : 16" class="input-col">
               <div class="autocomplete-wrapper">
                 <el-autocomplete
-                    class="inline-input"
-                    v-model="input"
-                    :fetch-suggestions="querySearch"
-                    placeholder="请输入宝可梦名称"
-                    :trigger-on-focus="false"
-                    popper-class="autocomplete-dropdown"
-                    style="width: 100%"></el-autocomplete>
+                  class="inline-input"
+                  v-model="input"
+                  :fetch-suggestions="querySearch"
+                  placeholder="请输入宝可梦名称"
+                  :trigger-on-focus="false"
+                  popper-class="autocomplete-dropdown"
+                  style="width: 100%"
+                ></el-autocomplete>
               </div>
             </el-col>
           </el-row>
-          <el-row type="flex" justify="center" align="middle" :gutter="20" class="button-row">
+          <el-row
+            type="flex"
+            justify="center"
+            align="middle"
+            :gutter="20"
+            class="button-row"
+          >
             <el-col :span="isMobile ? 6 : 3" class="button-col">
               <el-button
-                  type="primary"
-                  class="action-button"
-                  :disabled="this.times > 0 || this.gameover"
-                  @click="RandomStart()"
-                  icon="el-icon-refresh-left">
+                type="primary"
+                class="action-button"
+                :disabled="this.times > 0 || this.gameover"
+                @click="RandomStart()"
+                icon="el-icon-refresh-left"
+              >
                 随机开局
               </el-button>
             </el-col>
             <el-col :span="isMobile ? 6 : 3" class="button-col">
-              <el-button type="primary" class="action-button" :disabled="this.gameover" @click="Guess()">
-                {{ this.gameover ? '已结束' : '确定' }}
+              <el-button
+                type="primary"
+                class="action-button"
+                :disabled="this.gameover"
+                @click="Guess()"
+              >
+                {{ this.gameover ? "已结束" : "确定" }}
               </el-button>
             </el-col>
             <el-col :span="isMobile ? 6 : 3" class="button-col">
-              <el-button type="danger" class="action-button" :disabled="this.gameover" @click="Surrender()">
+              <el-button
+                type="danger"
+                class="action-button"
+                :disabled="this.gameover"
+                @click="Surrender()"
+              >
                 投降
               </el-button>
             </el-col>
             <el-col :span="isMobile ? 6 : 3" class="button-col">
-              <el-button type="success" class="action-button" @click="Restart()">重新开始</el-button>
+              <el-button type="success" class="action-button" @click="Restart()"
+                >重新开始</el-button
+              >
             </el-col>
             <el-col :span="isMobile ? 6 : 3" class="button-col">
-              <el-button class="action-button" @click="toDualCreate()">双人游戏</el-button>
+              <el-button class="action-button" @click="toDualCreate()"
+                >双人游戏</el-button
+              >
             </el-col>
           </el-row>
         </div>
@@ -239,10 +217,18 @@
 
         <!-- 移动端卡片垂直布局 -->
         <div v-if="isMobile" class="pokemon-cards mobile-cards">
-          <div v-for="(item, index) in displayedItems" :key="index" class="pokemon-card">
+          <div
+            v-for="(item, index) in displayedItems"
+            :key="index"
+            class="pokemon-card"
+          >
             <div class="card-header">
               <div class="pokemon-image">
-                <el-image style="width: 50px; height: 50px" :src="item.imgUrl" fit="contain"></el-image>
+                <el-image
+                  style="width: 50px; height: 50px"
+                  :src="item.imgUrl"
+                  fit="contain"
+                ></el-image>
               </div>
               <div class="pokemon-name">{{ item.name }}</div>
             </div>
@@ -250,27 +236,37 @@
             <div class="card-section">
               <div class="section-title">属性</div>
               <div class="section-content">
-                <el-tag v-for="(type, idx) in item.type" :key="'type-'+idx"
-                        size="mini" :type="type.col" class="info-tag"
-                        v-if="item.cheat.id!=1">
+                <el-tag
+                  v-for="(type, idx) in item.type"
+                  :key="'type-' + idx"
+                  size="mini"
+                  :type="type.col"
+                  class="info-tag"
+                  v-if="item.cheat.id != 1"
+                >
                   {{ type.key }}
                 </el-tag>
-                <img :src="item.cheat.imgUrl" v-if="item.cheat.id==1">
+                <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 1" />
               </div>
             </div>
 
             <div class="card-section">
               <div class="section-title">种族值</div>
               <div class="section-content">
-                <div v-if="item.cheat.id!=2">
+                <div v-if="item.cheat.id != 2">
                   <el-tag size="mini" :type="item.pow.col" class="info-tag">
                     {{ ValueText(item.pow.key, item.pow.value) }}
                   </el-tag>
-                  <el-tag v-if="settings.battleOpen" size="mini" :type="item.speed.col" class="info-tag">
+                  <el-tag
+                    v-if="settings.battleOpen"
+                    size="mini"
+                    :type="item.speed.col"
+                    class="info-tag"
+                  >
                     速度:{{ ValueText(item.speed.key, item.speed.value) }}
                   </el-tag>
                 </div>
-                <img :src="item.cheat.imgUrl" v-if="item.cheat.id==2">
+                <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 2" />
               </div>
             </div>
 
@@ -289,38 +285,56 @@
             <div class="card-section">
               <div class="section-title">世代</div>
               <div class="section-content">
-                <el-tag size="mini" :type="item.gen.col" class="info-tag"
-                        v-if="item.cheat.id!=3">
-                  {{ settings.showGenArrow ? ValueText(item.gen.key, item.gen.value) : item.gen.key }}
+                <el-tag
+                  size="mini"
+                  :type="item.gen.col"
+                  class="info-tag"
+                  v-if="item.cheat.id != 3"
+                >
+                  {{
+                    settings.showGenArrow
+                      ? ValueText(item.gen.key, item.gen.value)
+                      : item.gen.key
+                  }}
                 </el-tag>
-                <img :src="item.cheat.imgUrl" v-if="item.cheat.id==3">
+                <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 3" />
               </div>
             </div>
 
             <div class="card-section">
               <div class="section-title">特性</div>
               <div class="section-content">
-                <el-tag v-for="(ability, idx) in item.ability" :key="'ability-'+idx"
-                        size="mini" :type="ability.col" class="info-tag"
-                        v-if="item.cheat.id!=4">
+                <el-tag
+                  v-for="(ability, idx) in item.ability"
+                  :key="'ability-' + idx"
+                  size="mini"
+                  :type="ability.col"
+                  class="info-tag"
+                  v-if="item.cheat.id != 4"
+                >
                   {{ ability.key }}
                 </el-tag>
-                <img :src="item.cheat.imgUrl" v-if="item.cheat.id==4">
+                <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 4" />
               </div>
             </div>
 
             <div class="card-section">
               <div class="section-title">进化</div>
               <div class="section-content">
-                <div v-if="item.cheat.id!=5">
-                  <el-tag v-if="item.evo.key != null" size="mini" :type="item.evo.col" class="info-tag">
+                <div v-if="item.cheat.id != 5">
+                  <el-tag
+                    v-if="item.evo.key != null"
+                    size="mini"
+                    :type="item.evo.col"
+                    class="info-tag"
+                  >
                     {{ item.evo.key }}
                   </el-tag>
                   <el-tag size="mini" :type="item.stage.col" class="info-tag">
                     {{ item.stage.key }}
                   </el-tag>
                 </div>
-                <img :src="item.cheat.imgUrl" v-if="item.cheat.id==5">
+                <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 5" />
               </div>
             </div>
 
@@ -339,8 +353,13 @@
             <div v-if="settings.catchOpen" class="card-section">
               <div class="section-title">蛋组/捕获率</div>
               <div class="section-content">
-                <el-tag v-for="(egg, idx) in item.egg" :key="'egg-'+idx"
-                        size="mini" :type="egg.col" class="info-tag">
+                <el-tag
+                  v-for="(egg, idx) in item.egg"
+                  :key="'egg-' + idx"
+                  size="mini"
+                  :type="egg.col"
+                  class="info-tag"
+                >
                   {{ egg.key }}
                 </el-tag>
                 <el-tag size="mini" :type="item.catrate.col" class="info-tag">
@@ -352,12 +371,17 @@
             <div class="card-section">
               <div class="section-title">其他</div>
               <div class="section-content">
-                <el-tag v-for="(label, idx) in item.label" :key="'label-'+idx"
-                        size="mini" :type="label.col" class="info-tag"
-                        v-if="item.cheat.id!=6">
+                <el-tag
+                  v-for="(label, idx) in item.label"
+                  :key="'label-' + idx"
+                  size="mini"
+                  :type="label.col"
+                  class="info-tag"
+                  v-if="item.cheat.id != 6"
+                >
                   {{ label.key }}
                 </el-tag>
-                <img :src="item.cheat.imgUrl" v-if="item.cheat.id==6">
+                <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 6" />
               </div>
             </div>
           </div>
@@ -365,10 +389,18 @@
 
         <!-- 桌面端卡片水平布局 -->
         <div v-else class="pokemon-cards desktop-cards">
-          <div v-for="(item, index) in displayedItems" :key="index" class="pokemon-card desktop-card">
+          <div
+            v-for="(item, index) in displayedItems"
+            :key="index"
+            class="pokemon-card desktop-card"
+          >
             <div class="card-header">
               <div class="pokemon-image">
-                <el-image style="width: 60px; height: 60px" :src="item.imgUrl" fit="contain"></el-image>
+                <el-image
+                  style="width: 60px; height: 60px"
+                  :src="item.imgUrl"
+                  fit="contain"
+                ></el-image>
               </div>
               <div class="pokemon-name">{{ item.name }}</div>
             </div>
@@ -377,27 +409,37 @@
               <div class="desktop-section">
                 <div class="section-title">属性</div>
                 <div class="section-content">
-                  <el-tag v-for="(type, idx) in item.type" :key="'type-'+idx"
-                          size="small" :type="type.col" class="info-tag"
-                          v-if="item.cheat.id!=1">
+                  <el-tag
+                    v-for="(type, idx) in item.type"
+                    :key="'type-' + idx"
+                    size="small"
+                    :type="type.col"
+                    class="info-tag"
+                    v-if="item.cheat.id != 1"
+                  >
                     {{ type.key }}
                   </el-tag>
-                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id==1">
+                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 1" />
                 </div>
               </div>
 
               <div class="desktop-section">
                 <div class="section-title">种族值</div>
                 <div class="section-content">
-                  <div v-if="item.cheat.id!=2">
+                  <div v-if="item.cheat.id != 2">
                     <el-tag size="small" :type="item.pow.col" class="info-tag">
                       {{ ValueText(item.pow.key, item.pow.value) }}
                     </el-tag>
-                    <el-tag v-if="settings.battleOpen" size="small" :type="item.speed.col" class="info-tag">
+                    <el-tag
+                      v-if="settings.battleOpen"
+                      size="small"
+                      :type="item.speed.col"
+                      class="info-tag"
+                    >
                       速度:{{ ValueText(item.speed.key, item.speed.value) }}
                     </el-tag>
                   </div>
-                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id==2">
+                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 2" />
                 </div>
               </div>
 
@@ -407,7 +449,11 @@
                   <el-tag size="small" :type="item.attack.col" class="info-tag">
                     {{ item.attack.key }}
                   </el-tag>
-                  <el-tag size="small" :type="item.defense.col" class="info-tag">
+                  <el-tag
+                    size="small"
+                    :type="item.defense.col"
+                    class="info-tag"
+                  >
                     {{ item.defense.key }}
                   </el-tag>
                 </div>
@@ -416,38 +462,60 @@
               <div class="desktop-section">
                 <div class="section-title">世代</div>
                 <div class="section-content">
-                  <el-tag size="small" :type="item.gen.col" class="info-tag"
-                          v-if="item.cheat.id!=3">
-                    {{ settings.showGenArrow ? ValueText(item.gen.key, item.gen.value) : item.gen.key }}
+                  <el-tag
+                    size="small"
+                    :type="item.gen.col"
+                    class="info-tag"
+                    v-if="item.cheat.id != 3"
+                  >
+                    {{
+                      settings.showGenArrow
+                        ? ValueText(item.gen.key, item.gen.value)
+                        : item.gen.key
+                    }}
                   </el-tag>
-                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id==3">
+                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 3" />
                 </div>
               </div>
 
               <div class="desktop-section">
                 <div class="section-title">特性</div>
                 <div class="section-content">
-                  <el-tag v-for="(ability, idx) in item.ability" :key="'ability-'+idx"
-                          size="small" :type="ability.col" class="info-tag"
-                          v-if="item.cheat.id!=4">
+                  <el-tag
+                    v-for="(ability, idx) in item.ability"
+                    :key="'ability-' + idx"
+                    size="small"
+                    :type="ability.col"
+                    class="info-tag"
+                    v-if="item.cheat.id != 4"
+                  >
                     {{ ability.key }}
                   </el-tag>
-                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id==4">
+                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 4" />
                 </div>
               </div>
 
               <div class="desktop-section">
                 <div class="section-title">进化</div>
                 <div class="section-content">
-                  <div v-if="item.cheat.id!=5">
-                    <el-tag v-if="item.evo.key != null" size="small" :type="item.evo.col" class="info-tag">
+                  <div v-if="item.cheat.id != 5">
+                    <el-tag
+                      v-if="item.evo.key != null"
+                      size="small"
+                      :type="item.evo.col"
+                      class="info-tag"
+                    >
                       {{ item.evo.key }}
                     </el-tag>
-                    <el-tag size="small" :type="item.stage.col" class="info-tag">
+                    <el-tag
+                      size="small"
+                      :type="item.stage.col"
+                      class="info-tag"
+                    >
                       {{ item.stage.key }}
                     </el-tag>
                   </div>
-                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id==5">
+                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 5" />
                 </div>
               </div>
 
@@ -466,11 +534,20 @@
               <div v-if="settings.catchOpen" class="desktop-section">
                 <div class="section-title">蛋组/捕获率</div>
                 <div class="section-content">
-                  <el-tag v-for="(egg, idx) in item.egg" :key="'egg-'+idx"
-                          size="small" :type="egg.col" class="info-tag">
+                  <el-tag
+                    v-for="(egg, idx) in item.egg"
+                    :key="'egg-' + idx"
+                    size="small"
+                    :type="egg.col"
+                    class="info-tag"
+                  >
                     {{ egg.key }}
                   </el-tag>
-                  <el-tag size="small" :type="item.catrate.col" class="info-tag">
+                  <el-tag
+                    size="small"
+                    :type="item.catrate.col"
+                    class="info-tag"
+                  >
                     捕获率:{{ ValueText(item.catrate.key, item.catrate.value) }}
                   </el-tag>
                 </div>
@@ -479,12 +556,17 @@
               <div class="desktop-section">
                 <div class="section-title">其他</div>
                 <div class="section-content">
-                  <el-tag v-for="(label, idx) in item.label" :key="'label-'+idx"
-                          size="small" :type="label.col" class="info-tag"
-                          v-if="item.cheat.id!=6">
+                  <el-tag
+                    v-for="(label, idx) in item.label"
+                    :key="'label-' + idx"
+                    size="small"
+                    :type="label.col"
+                    class="info-tag"
+                    v-if="item.cheat.id != 6"
+                  >
                     {{ label.key }}
                   </el-tag>
-                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id==6">
+                  <img :src="item.cheat.imgUrl" v-if="item.cheat.id == 6" />
                 </div>
               </div>
             </div>
@@ -496,16 +578,22 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
+import { Intro, About } from "@/components";
+import { listPokemonName } from "@/api";
 
 function truncateString(str, maxLength) {
   if (str.length > maxLength) {
-    return str.slice(0, maxLength) + '...';
+    return str.slice(0, maxLength) + "...";
   }
   return str;
 }
 
 export default {
+  components: {
+    Intro,
+    About,
+  },
   data() {
     return {
       input: "",
@@ -521,17 +609,44 @@ export default {
       introVisble: false,
       surrendered: false,
       darkMode: false, // 新增：夜间模式状态
-      gens: ["全世代", "第一世代（红/黄/蓝/绿）", "第二世代（金/银）", "第三世代（红宝石/蓝宝石/绿宝石/火红/叶绿）", "第四世代（珍珠/钻石/白金/心金/魂银）", "第五世代（黑/白/黑2/白2）", "第六世代（X/Y/欧米伽红宝石/阿尔法蓝宝石）", "第七世代（日/月/究极之日/究极之月）", "第八世代（剑/盾）", "第九世代（朱/紫）"],
+      gens: [
+        "全世代",
+        "第一世代（红/黄/蓝/绿）",
+        "第二世代（金/银）",
+        "第三世代（红宝石/蓝宝石/绿宝石/火红/叶绿）",
+        "第四世代（珍珠/钻石/白金/心金/魂银）",
+        "第五世代（黑/白/黑2/白2）",
+        "第六世代（X/Y/欧米伽红宝石/阿尔法蓝宝石）",
+        "第七世代（日/月/究极之日/究极之月）",
+        "第八世代（剑/盾）",
+        "第九世代（朱/紫）",
+      ],
       genOptions: [
-        {label: '第一世代（红/黄/蓝/绿）', value: 1, range: [0, 150]},
-        {label: '第二世代（金/银）', value: 2, range: [151, 250]},
-        {label: '第三世代（红宝石/蓝宝石/绿宝石/火红/叶绿）', value: 3, range: [251, 385]},
-        {label: '第四世代（珍珠/钻石/白金/心金/魂银）', value: 4, range: [386, 492]},
-        {label: '第五世代（黑/白/黑2/白2）', value: 5, range: [493, 648]},
-        {label: '第六世代（X/Y/欧米伽红宝石/阿尔法蓝宝石）', value: 6, range: [649, 720]},
-        {label: '第七世代（日/月/究极之日/究极之月）', value: 7, range: [721, 808]},
-        {label: '第八世代（剑/盾）', value: 8, range: [809, 904]},
-        {label: '第九世代（朱/紫）', value: 9, range: [905, 1024]}
+        { label: "第一世代（红/黄/蓝/绿）", value: 1, range: [0, 150] },
+        { label: "第二世代（金/银）", value: 2, range: [151, 250] },
+        {
+          label: "第三世代（红宝石/蓝宝石/绿宝石/火红/叶绿）",
+          value: 3,
+          range: [251, 385],
+        },
+        {
+          label: "第四世代（珍珠/钻石/白金/心金/魂银）",
+          value: 4,
+          range: [386, 492],
+        },
+        { label: "第五世代（黑/白/黑2/白2）", value: 5, range: [493, 648] },
+        {
+          label: "第六世代（X/Y/欧米伽红宝石/阿尔法蓝宝石）",
+          value: 6,
+          range: [649, 720],
+        },
+        {
+          label: "第七世代（日/月/究极之日/究极之月）",
+          value: 7,
+          range: [721, 808],
+        },
+        { label: "第八世代（剑/盾）", value: 8, range: [809, 904] },
+        { label: "第九世代（朱/紫）", value: 9, range: [905, 1024] },
       ],
       hards: ["普通模式", "简单模式"],
       cheaters: ["Amoonguss", "Sableye", "Smeargle", "Whimsicott"],
@@ -550,8 +665,8 @@ export default {
       // 开发者配置：图片来源
       useGitHubImages: true,
       windowWidth: window.innerWidth,
-      isMobile: window.innerWidth <= 768
-    }
+      isMobile: window.innerWidth <= 768,
+    };
   },
   methods: {
     // 新增：切换夜间/日间模式
@@ -564,16 +679,16 @@ export default {
     // 新增：应用夜间模式
     applyDarkMode() {
       if (this.darkMode) {
-        document.body.classList.add('dark-mode');
+        document.body.classList.add("dark-mode");
       } else {
-        document.body.classList.remove('dark-mode');
+        document.body.classList.remove("dark-mode");
       }
     },
 
     // 新增：保存夜间模式偏好
     saveDarkModePreference() {
       try {
-        localStorage.setItem('darkMode', JSON.stringify(this.darkMode));
+        localStorage.setItem("darkMode", JSON.stringify(this.darkMode));
       } catch (e) {
         console.error("保存夜间模式偏好失败:", e);
       }
@@ -582,7 +697,7 @@ export default {
     // 新增：加载夜间模式偏好
     loadDarkModePreference() {
       try {
-        const savedMode = localStorage.getItem('darkMode');
+        const savedMode = localStorage.getItem("darkMode");
         if (savedMode !== null) {
           this.darkMode = JSON.parse(savedMode);
           this.applyDarkMode();
@@ -599,8 +714,9 @@ export default {
       const query = queryString.toLowerCase();
 
       return (item) => {
-        const target = (item.value || '').toLowerCase();
-        let qIndex = 0, tIndex = 0;
+        const target = (item.value || "").toLowerCase();
+        let qIndex = 0,
+          tIndex = 0;
 
         while (qIndex < query.length && tIndex < target.length) {
           if (query[qIndex] === target[tIndex]) qIndex++;
@@ -611,36 +727,42 @@ export default {
     },
 
     querySearch(queryString, cb) {
-      Promise.resolve(this.createFilter(queryString)).then(filter => {
-        const results = queryString
+      // todo: 使用 /api/pokemon/name?search=xxx 和节流
+      Promise.resolve(this.createFilter(queryString))
+        .then((filter) => {
+          const results = queryString
             ? this.nameList.filter(filter)
             : this.nameList;
-        cb(results);
-      }).catch(err => {
-        console.error('Filter error:', err);
-        cb([]);
-      });
+          cb(results);
+        })
+        .catch((err) => {
+          console.error("Filter error:", err);
+          cb([]);
+        });
     },
 
     async loadName() {
       try {
         this.tempdata = require(`@/assets/json/WordInfo.json`);
-        this.nameList = this.tempdata.map(item => ({value: item}));
+        this.nameList = this.tempdata.map((item) => ({ value: item }));
         console.log("名称列表加载成功");
       } catch (error) {
         console.error("加载名称失败:", error);
         // 如果本地加载失败，尝试通过API获取
         try {
           const options = {
-            method: 'GET',
-            url: `${process.env.VUE_APP_API_BASE_URL}/nameget`
+            method: "GET",
+            url: `${process.env.VUE_APP_API_BASE_URL}/nameget`,
           };
-          await axios.request(options).then((response) => {
-            this.tempdata = response.data;
-            this.nameList = this.tempdata.map(item => ({value: item}));
-          }).catch(function (error) {
-            console.error("API获取名称失败:", error);
-          });
+          await axios
+            .request(options)
+            .then((response) => {
+              this.tempdata = response.data;
+              this.nameList = this.tempdata.map((item) => ({ value: item }));
+            })
+            .catch(function (error) {
+              console.error("API获取名称失败:", error);
+            });
         } catch (apiError) {
           console.error("API获取名称失败:", apiError);
         }
@@ -648,35 +770,38 @@ export default {
       return;
     },
     async toDualCreate() {
-      await this.$router.push('/dualCreate')
+      await this.$router.push("/dualCreate");
     },
     async Restart() {
       this.times = 0;
       this.gameover = false;
       this.surrendered = false;
-      sessionStorage.removeItem('answer');
+      sessionStorage.removeItem("answer");
       this.tableData = [];
       console.log(`${process.env.VUE_APP_API_BASE_URL}/initget`);
       try {
         var gen = 10;
         for (let i = 0; i < 9; i++)
-          if (this.settings.selectedGens[i]) gen += (1 << i);
+          if (this.settings.selectedGens[i]) gen += 1 << i;
         const dif = this.hards.indexOf(this.settings.hardid);
         const options = {
-          method: 'GET',
+          method: "GET",
           url: `${process.env.VUE_APP_API_BASE_URL}/initget`,
           params: {
             difficulty: dif,
-            gen: gen
-          }
+            gen: gen,
+          },
         };
 
-        await axios.request(options).then((response) => {
-          this.tempdata = response.data;
-        }).catch(function (error) {
-          console.error(error);
-        });
-        sessionStorage.setItem('answer', this.tempdata);
+        await axios
+          .request(options)
+          .then((response) => {
+            this.tempdata = response.data;
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+        sessionStorage.setItem("answer", this.tempdata);
       } catch (error) {
         console.error(error);
       }
@@ -690,29 +815,32 @@ export default {
     },
 
     async Guess() {
-      const answer = sessionStorage.getItem('answer');
+      const answer = sessionStorage.getItem("answer");
       if (answer == null) return;
       try {
         const options = {
-          method: 'GET',
+          method: "GET",
           url: `${process.env.VUE_APP_API_BASE_URL}/guess`,
           params: {
             answer: answer,
-            guess: this.input
-          }
+            guess: this.input,
+          },
         };
-        await axios.request(options).then((response) => {
-          this.tempdata = response.data;
-        }).catch(function (error) {
-          console.error(error);
-        });
+        await axios
+          .request(options)
+          .then((response) => {
+            this.tempdata = response.data;
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
 
         const data = this.tempdata;
         if (data == "guess name error") {
           this.$notify({
-            title: '提交错误',
-            message: '不存在的宝可梦',
-            type: "error"
+            title: "提交错误",
+            message: "不存在的宝可梦",
+            type: "error",
           });
         } else {
           this.temp = {};
@@ -724,10 +852,9 @@ export default {
           this.temp.type = [];
           data.type.forEach((type, index) => {
             if (type.key != "无") {
-              if (type.value == 'True')
-                this.temp.type.push({key: type.key, col: "success"});
-              else
-                this.temp.type.push({key: type.key, col: "info"});
+              if (type.value == "True")
+                this.temp.type.push({ key: type.key, col: "success" });
+              else this.temp.type.push({ key: type.key, col: "info" });
             }
           });
 
@@ -735,126 +862,104 @@ export default {
           this.temp.pow = {};
           this.temp.pow.key = data.pow.key;
           this.temp.pow.value = data.pow.value;
-          if (data.pow.value == "equiv")
-            this.temp.pow.col = "success";
-          else if (data.pow.dis == "far")
-            this.temp.pow.col = "info";
-          else
-            this.temp.pow.col = "warning";
+          if (data.pow.value == "equiv") this.temp.pow.col = "success";
+          else if (data.pow.dis == "far") this.temp.pow.col = "info";
+          else this.temp.pow.col = "warning";
 
           // 速度
           this.temp.speed = {};
           this.temp.speed.key = data.speed.key;
           this.temp.speed.value = data.speed.value;
-          if (data.speed.value == "equiv")
-            this.temp.speed.col = "success";
-          else if (data.speed.dis == "far")
-            this.temp.speed.col = "info";
-          else
-            this.temp.speed.col = "warning";
+          if (data.speed.value == "equiv") this.temp.speed.col = "success";
+          else if (data.speed.dis == "far") this.temp.speed.col = "info";
+          else this.temp.speed.col = "warning";
 
           // 物特
           this.temp.attack = {};
           this.temp.attack.key = data.attack.key;
           this.temp.attack.value = data.attack.value;
-          if (data.attack.value == 'True')
-            this.temp.attack.col = "success";
-          else
-            this.temp.attack.col = "info";
+          if (data.attack.value == "True") this.temp.attack.col = "success";
+          else this.temp.attack.col = "info";
 
           this.temp.defense = {};
           this.temp.defense.key = data.defense.key;
           this.temp.defense.value = data.defense.value;
-          if (data.defense.value == 'True')
-            this.temp.defense.col = "success";
-          else
-            this.temp.defense.col = "info";
+          if (data.defense.value == "True") this.temp.defense.col = "success";
+          else this.temp.defense.col = "info";
 
           // 世代
           this.temp.gen = {};
           this.temp.gen.key = data.gen.key;
           this.temp.gen.value = data.gen.value;
-          if (data.gen.value == 'equiv')
-            this.temp.gen.col = "success";
-          else if (data.gen.dis == 'far')
-            this.temp.gen.col = "info";
+          if (data.gen.value == "equiv") this.temp.gen.col = "success";
+          else if (data.gen.dis == "far") this.temp.gen.col = "info";
           else this.temp.gen.col = "warning";
 
           // 特性
           this.temp.ability = [];
           data.ability.forEach((ability, index) => {
-            if (ability.value == 'True')
-              this.temp.ability.push({key: ability.key, col: "success"});
-            else
-              this.temp.ability.push({key: ability.key, col: "info"});
+            if (ability.value == "True")
+              this.temp.ability.push({ key: ability.key, col: "success" });
+            else this.temp.ability.push({ key: ability.key, col: "info" });
           });
 
           // 进化方式
           this.temp.evo = {};
           this.temp.evo.key = data.evo.key;
           if (this.temp.evo.key != null)
-            this.temp.evo.key = truncateString(this.temp.evo.key, this.isMobile ? 6 : 12);
-          if (data.evo.value == "far")
-            this.temp.evo.col = "info";
-          else if (data.evo.value == "near")
-            this.temp.evo.col = "warning";
-          else
-            this.temp.evo.col = "success";
+            this.temp.evo.key = truncateString(
+              this.temp.evo.key,
+              this.isMobile ? 6 : 12
+            );
+          if (data.evo.value == "far") this.temp.evo.col = "info";
+          else if (data.evo.value == "near") this.temp.evo.col = "warning";
+          else this.temp.evo.col = "success";
 
           // 阶段
           this.temp.stage = {};
           this.temp.stage.key = data.stage.key;
           this.temp.stage.value = data.stage.value;
-          if (data.stage.value == 'True')
-            this.temp.stage.col = "success";
-          else
-            this.temp.stage.col = "info";
+          if (data.stage.value == "True") this.temp.stage.col = "success";
+          else this.temp.stage.col = "info";
 
           // 蛋组
           this.temp.egg = [];
           data.egg.forEach((egg, index) => {
-            if (egg.value == 'True')
-              this.temp.egg.push({key: egg.key, col: "success"});
-            else
-              this.temp.egg.push({key: egg.key, col: "info"});
+            if (egg.value == "True")
+              this.temp.egg.push({ key: egg.key, col: "success" });
+            else this.temp.egg.push({ key: egg.key, col: "info" });
           });
 
           // 捕获率
           this.temp.catrate = {};
           this.temp.catrate.key = data.catrate.key;
           this.temp.catrate.value = data.catrate.value;
-          if (data.catrate.value == "equiv")
-            this.temp.catrate.col = "success";
-          else
-            this.temp.catrate.col = "info";
+          if (data.catrate.value == "equiv") this.temp.catrate.col = "success";
+          else this.temp.catrate.col = "info";
 
           // 外形
           this.temp.shape = {};
           this.temp.shape.key = data.shape.key;
           this.temp.shape.value = data.shape.value;
-          if (data.shape.value == 'True')
-            this.temp.shape.col = "success";
-          else
-            this.temp.shape.col = "info";
+          if (data.shape.value == "True") this.temp.shape.col = "success";
+          else this.temp.shape.col = "info";
 
           this.temp.col = {};
           this.temp.col.key = data.col.key;
           this.temp.col.value = data.col.value;
-          if (data.col.value === 'True')
-            this.temp.col.col = "success";
-          else
-            this.temp.col.col = "info";
+          if (data.col.value === "True") this.temp.col.col = "success";
+          else this.temp.col.col = "info";
 
           // 其他标签
           this.temp.label = [];
           data.label.forEach((label, index) => {
-            if (label.value === 'True') {
-              this.temp.label.push({key: label.key, col: "success"});
+            if (label.value === "True") {
+              this.temp.label.push({ key: label.key, col: "success" });
             } else if (label.similarity === "similar") {
               // 相似形态，标黄
-              this.temp.label.push({key: label.key, col: "warning"});
+              this.temp.label.push({ key: label.key, col: "warning" });
             } else {
-              this.temp.label.push({key: label.key, col: "info"});
+              this.temp.label.push({ key: label.key, col: "info" });
             }
           });
 
@@ -863,7 +968,8 @@ export default {
 
           // 恶作剧
           this.temp.cheat = {};
-          const cheater = this.cheaters[Math.floor(Math.random() * this.cheaters.length)];
+          const cheater =
+            this.cheaters[Math.floor(Math.random() * this.cheaters.length)];
           this.temp.cheat.imgUrl = require(`@/assets/img/${cheater}.gif`);
           this.temp.cheat.id = 0;
           if (this.settings.cheatOpen)
@@ -876,7 +982,10 @@ export default {
           this.input = "";
 
           // 猜测结束
-          if (this.temp.answer == 'True' || this.times == this.settings.maxguess) {
+          if (
+            this.temp.answer == "True" ||
+            this.times == this.settings.maxguess
+          ) {
             this.gameover = true;
             this.ReplayAnswer();
           }
@@ -922,45 +1031,46 @@ export default {
     async loadApiImage(pokemonName, tempObj) {
       try {
         const options = {
-          method: 'GET',
+          method: "GET",
           url: `${process.env.VUE_APP_API_BASE_URL}/getimage`,
-          params: {pokemon: pokemonName},
-          responseType: 'blob'
+          params: { pokemon: pokemonName },
+          responseType: "blob",
         };
         const response = await axios.request(options);
         const blob = new Blob([response.data]);
         tempObj.imgUrl = URL.createObjectURL(blob);
       } catch (error) {
-        console.error('API图片获取失败:', error);
+        console.error("API图片获取失败:", error);
         // 设置默认图片
         //tempObj.imgUrl = require("@/assets/img/pokemon-placeholder.png");
       }
     },
 
     ValueText(key, value) {
-      if (value == 'high')
-        return String(key) + "↑";
-      if (value == 'low')
-        return String(key) + "↓";
+      if (value == "high") return String(key) + "↑";
+      if (value == "low") return String(key) + "↓";
       return String(key);
     },
 
     async ReplayAnswer() {
-      const answer = sessionStorage.getItem('answer');
+      const answer = sessionStorage.getItem("answer");
       if (answer == null) return;
       try {
         const options = {
-          method: 'GET',
+          method: "GET",
           url: `${process.env.VUE_APP_API_BASE_URL}/getanswer`,
           params: {
-            pokemon: answer
-          }
+            pokemon: answer,
+          },
         };
-        await axios.request(options).then((response) => {
-          this.tempdata = response.data;
-        }).catch(function (error) {
-          console.error(error);
-        });
+        await axios
+          .request(options)
+          .then((response) => {
+            this.tempdata = response.data;
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
         const data = this.tempdata;
         console.log(data);
 
@@ -986,96 +1096,114 @@ export default {
           if (index != 0) this.reply.label += ",";
           this.reply.label += tmp.key;
         });
-        if (this.reply.label == "")
-          this.reply.label = "无";
+        if (this.reply.label == "") this.reply.label = "无";
 
         // 提取世代号，避免重复
         let genNumber = data.gen.key;
-        if (genNumber.startsWith('第') && genNumber.endsWith('世代')) {
+        if (genNumber.startsWith("第") && genNumber.endsWith("世代")) {
           genNumber = genNumber.substring(1, genNumber.length - 2);
         }
 
         const h = this.$createElement;
 
-        const resultContent = h('div', {class: 'result-dialog-container'}, [
-          h('div', {class: 'result-dialog-header'}, [
-            h('div', {class: 'result-image-container'}, [
-              h('img', {
+        const resultContent = h("div", { class: "result-dialog-container" }, [
+          h("div", { class: "result-dialog-header" }, [
+            h("div", { class: "result-image-container" }, [
+              h("img", {
                 attrs: {
                   src: this.temp.imgUrl,
-                  alt: data.name
+                  alt: data.name,
                 },
-                class: 'result-pokemon-image'
-              })
+                class: "result-pokemon-image",
+              }),
             ]),
-            h('div', {class: 'result-title-container'}, [
-              h('h2', {class: 'result-pokemon-name'}, data.name),
-              h('p', {class: 'result-pokemon-gen'}, `第${genNumber}世代`)
-            ])
+            h("div", { class: "result-title-container" }, [
+              h("h2", { class: "result-pokemon-name" }, data.name),
+              h("p", { class: "result-pokemon-gen" }, `第${genNumber}世代`),
+            ]),
           ]),
-          h('div', {class: 'result-info-compact'}, [
-            h('div', {class: 'result-info-row'}, [
-              h('span', {class: 'result-info-label'}, '属性:'),
-              h('div', {class: 'result-info-tags'},
-                  data.type.filter(type => type.key !== "无").map(type =>
-                      h('el-tag', {
-                        props: {size: 'mini', type: 'success'},
-                        class: 'result-tag'
-                      }, type.key)
+          h("div", { class: "result-info-compact" }, [
+            h("div", { class: "result-info-row" }, [
+              h("span", { class: "result-info-label" }, "属性:"),
+              h(
+                "div",
+                { class: "result-info-tags" },
+                data.type
+                  .filter((type) => type.key !== "无")
+                  .map((type) =>
+                    h(
+                      "el-tag",
+                      {
+                        props: { size: "mini", type: "success" },
+                        class: "result-tag",
+                      },
+                      type.key
+                    )
                   )
-              )
+              ),
             ]),
-            h('div', {class: 'result-info-row'}, [
-              h('span', {class: 'result-info-label'}, '种族值:'),
-              h('span', {class: 'result-info-value'}, data.pow.key)
+            h("div", { class: "result-info-row" }, [
+              h("span", { class: "result-info-label" }, "种族值:"),
+              h("span", { class: "result-info-value" }, data.pow.key),
             ]),
-            h('div', {class: 'result-info-row'}, [
-              h('span', {class: 'result-info-label'}, '特性:'),
-              h('div', {class: 'result-info-tags'},
-                  data.ability.map(ability =>
-                      h('el-tag', {
-                        props: {size: 'mini', type: 'info'},
-                        class: 'result-tag'
-                      }, ability.key)
+            h("div", { class: "result-info-row" }, [
+              h("span", { class: "result-info-label" }, "特性:"),
+              h(
+                "div",
+                { class: "result-info-tags" },
+                data.ability.map((ability) =>
+                  h(
+                    "el-tag",
+                    {
+                      props: { size: "mini", type: "info" },
+                      class: "result-tag",
+                    },
+                    ability.key
                   )
-              )
-            ])
+                )
+              ),
+            ]),
           ]),
-          h('div', {class: 'result-stats'}, [
-            h('p', {class: 'result-guess-count'},
-                this.surrendered ?
-                    '你已投降，算不得英雄' :
-                    `你用了 ${this.times} 次尝试${this.temp.answer === 'True' ? ' 猜出正确答案' : ''}`)
-          ])
+          h("div", { class: "result-stats" }, [
+            h(
+              "p",
+              { class: "result-guess-count" },
+              this.surrendered
+                ? "你已投降，算不得英雄"
+                : `你用了 ${this.times} 次尝试${
+                    this.temp.answer === "True" ? " 猜出正确答案" : ""
+                  }`
+            ),
+          ]),
         ]);
 
-        let dialogTitle = '游戏结束';
+        let dialogTitle = "游戏结束";
 
         if (!this.surrendered) {
-          if (this.temp.answer === 'True') {
+          if (this.temp.answer === "True") {
             if (this.times <= 3) {
-              dialogTitle = '太厉害了，鼓掌👏👏👏';
+              dialogTitle = "太厉害了，鼓掌👏👏👏";
             } else {
-              dialogTitle = '恭喜你猜对了！';
+              dialogTitle = "恭喜你猜对了！";
             }
           }
         }
 
         this.$confirm(resultContent, dialogTitle, {
-          confirmButtonText: '再来一次',
-          cancelButtonText: '返回',
-          customClass: 'result-dialog',
+          confirmButtonText: "再来一次",
+          cancelButtonText: "返回",
+          customClass: "result-dialog",
           dangerouslyUseHTMLString: true,
           center: true,
           showClose: false,
           closeOnClickModal: false,
           closeOnPressEscape: false,
           distinguishCancelAndClose: true,
-          callback: action => {
-            if (action === 'confirm') {
+          callback: (action) => {
+            if (action === "confirm") {
               this.Restart();
             }
-          }
+          },
         });
       } catch (error) {
         console.error(error);
@@ -1091,7 +1219,17 @@ export default {
         }
 
         if (this.selectedGenIndices.length === 0) {
-          this.settings.selectedGens = [true, true, true, true, true, true, true, true, true];
+          this.settings.selectedGens = [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+          ];
         }
 
         const eligiblePokemon = [];
@@ -1099,19 +1237,24 @@ export default {
         this.nameList.forEach((pokemon, index) => {
           const pokemonId = index;
 
-          const inSelectedGen = this.settings.selectedGens.some((selected, genIndex) => {
-            if (!selected) return false;
+          const inSelectedGen = this.settings.selectedGens.some(
+            (selected, genIndex) => {
+              if (!selected) return false;
 
-            const range = this.genOptions[genIndex].range;
-            return pokemonId >= range[0] && pokemonId <= range[1];
-          });
+              const range = this.genOptions[genIndex].range;
+              return pokemonId >= range[0] && pokemonId <= range[1];
+            }
+          );
 
           if (inSelectedGen) {
             eligiblePokemon.push(pokemon.value);
           }
         });
 
-        const pokemonPool = eligiblePokemon.length > 0 ? eligiblePokemon : this.nameList.map(p => p.value);
+        const pokemonPool =
+          eligiblePokemon.length > 0
+            ? eligiblePokemon
+            : this.nameList.map((p) => p.value);
 
         const randomIndex = Math.floor(Math.random() * pokemonPool.length);
         const randomPokemon = pokemonPool[randomIndex];
@@ -1121,13 +1264,12 @@ export default {
         this.$nextTick(() => {
           this.Guess();
         });
-
       } catch (error) {
         console.error("随机开局错误:", error);
         this.$notify({
-          title: '随机失败',
-          message: '无法随机选择宝可梦，请手动输入',
-          type: "warning"
+          title: "随机失败",
+          message: "无法随机选择宝可梦，请手动输入",
+          type: "warning",
         });
       }
     },
@@ -1141,7 +1283,7 @@ export default {
     saveSettings() {
       console.log("保存设置中");
       try {
-        localStorage.setItem('guessSettings', JSON.stringify(this.settings));
+        localStorage.setItem("guessSettings", JSON.stringify(this.settings));
       } catch (e) {
         console.error("设置保存失败：", e);
       }
@@ -1152,7 +1294,7 @@ export default {
         const savedSettings = localStorage.getItem("guessSettings");
         if (savedSettings) {
           const parsedSettings = JSON.parse(savedSettings);
-          this.settings = {...this.settings, ...parsedSettings};
+          this.settings = { ...this.settings, ...parsedSettings };
         }
       } catch (e) {
         console.error("设置加载失败：", e);
@@ -1165,32 +1307,36 @@ export default {
     },
 
     handleGenChange(index) {
-      const selectedCount = this.settings.selectedGens.filter(selected => selected).length;
+      const selectedCount = this.settings.selectedGens.filter(
+        (selected) => selected
+      ).length;
 
       if (selectedCount === 0) {
         this.$nextTick(() => {
           this.settings.selectedGens[index] = true;
           this.$message({
-            message: '至少需要选择一个世代！',
-            type: 'warning'
+            message: "至少需要选择一个世代！",
+            type: "warning",
           });
         });
       }
     },
 
     openLink(url) {
-      window.open(url, '_blank');
-    }
+      window.open(url, "_blank");
+    },
   },
   computed: {
     displayedItems() {
-      return this.settings.reverseDisplay ? this.tableData.slice().reverse() : this.tableData;
+      return this.settings.reverseDisplay
+        ? this.tableData.slice().reverse()
+        : this.tableData;
     },
     selectedGenIndices() {
       return this.settings.selectedGens
-          .map((selected, index) => selected ? index + 1 : null)
-          .filter(index => index !== null);
-    }
+        .map((selected, index) => (selected ? index + 1 : null))
+        .filter((index) => index !== null);
+    },
   },
   mounted() {
     this.loadSettings();
@@ -1198,12 +1344,12 @@ export default {
     this.$nextTick(() => {
       this.Restart();
     });
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
-  }
-}
+    window.removeEventListener("resize", this.handleResize);
+  },
+};
 </script>
 
 <style>
@@ -1264,7 +1410,7 @@ export default {
 }
 
 .setting-section {
-  border-bottom: 1px dashed #EBEEF5;
+  border-bottom: 1px dashed #ebeef5;
   padding-bottom: 15px;
 }
 
@@ -1428,7 +1574,7 @@ export default {
 }
 
 .pokemon-card {
-  border: 1px solid #EBEEF5;
+  border: 1px solid #ebeef5;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #fff;
@@ -1443,7 +1589,7 @@ export default {
 .card-header {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #EBEEF5;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .pokemon-image {
@@ -1496,7 +1642,7 @@ export default {
 .mobile-cards .card-section {
   margin-bottom: 8px;
   padding-bottom: 8px;
-  border-bottom: 1px dashed #EBEEF5;
+  border-bottom: 1px dashed #ebeef5;
 }
 
 .mobile-cards .card-section:last-child {
@@ -1527,7 +1673,7 @@ export default {
   flex-direction: column;
   padding: 15px;
   border-bottom: none;
-  border-right: 1px solid #EBEEF5;
+  border-right: 1px solid #ebeef5;
   align-items: center;
   justify-content: center;
   min-width: 100px;
@@ -1563,7 +1709,7 @@ export default {
 .desktop-section .section-title {
   font-size: 14px;
   margin-bottom: 10px;
-  border-bottom: 1px dashed #EBEEF5;
+  border-bottom: 1px dashed #ebeef5;
   padding-bottom: 5px;
   white-space: nowrap;
 }

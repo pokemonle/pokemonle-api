@@ -6,34 +6,49 @@
     :show-close="false"
     :before-close="Close"
   >
-    <a
-      href="https://www.bilibili.com/video/BV1XmLFz5E7Y/?spm_id_from=333.1387.homepage.video_card.click"
-      >视频链接</a
-    >
-    <div style="display: flex; margin: 10px">
-      <div style="width: 120px">
-        <el-card :body-style="{ padding: '0px' }">
-          <el-image
-            style="width: 120px; height: 120px"
-            :src="require(`@/assets/img/QAHead.jpg`)"
-          ></el-image>
-          <div style="padding: 4px">
+    <div class="author-content">
+      <div class="author-links">
+        <el-button
+          type="primary"
+          size="small"
+          @click="
+            openLink(
+              'https://www.bilibili.com/video/BV1XmLFz5E7Y/?spm_id_from=333.1387.homepage.video_card.click'
+            )
+          "
+        >
+          视频链接
+        </el-button>
+        <el-button
+          type="info"
+          size="small"
+          @click="openLink('https://space.bilibili.com/38187048')"
+        >
+          作者空间
+        </el-button>
+        <el-button
+          type="success"
+          size="small"
+          @click="openLink('https://github.com/QuantAskk/pokemonle')"
+        >
+          项目源地址
+        </el-button>
+      </div>
+      <div class="author-cards">
+        <el-card :body-style="{ padding: '0px' }" class="author-card">
+          <img src="@/assets/img/QAHead.jpg" class="author-avatar" />
+          <div class="author-info">
             <span>QuantAsk</span>
             <br />
-            <el-tag size="mini" type="info"> 作者 </el-tag>
+            <el-tag size="mini" type="info">作者</el-tag>
           </div>
         </el-card>
-      </div>
-      <div style="width: 120px; margin-left: 10px">
-        <el-card :body-style="{ padding: '0px' }">
-          <el-image
-            style="width: 120px; height: 120px"
-            :src="require(`@/assets/img/GengerHead.jpg`)"
-          ></el-image>
-          <div style="padding: 4px">
+        <el-card :body-style="{ padding: '0px' }" class="author-card">
+          <img src="@/assets/img/GengerHead.jpg" class="author-avatar" />
+          <div class="author-info">
             <span>流明Luminous</span>
             <br />
-            <el-tag size="mini" type="info"> ui优化 </el-tag>
+            <el-tag size="mini" type="info">UI优化</el-tag>
           </div>
         </el-card>
       </div>

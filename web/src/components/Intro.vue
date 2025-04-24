@@ -10,6 +10,7 @@
     <div class="intro-content">
       <p>输入一个宝可梦进行猜测。</p>
       <p>每次猜测后，你会获得你输入的宝可梦的信息。</p>
+
       <div class="hint-section">
         <div class="hint-item">
           <el-tag type="success" size="small">绿色高亮</el-tag>
