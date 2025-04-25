@@ -8,7 +8,7 @@ router = APIRouter(prefix="/version", tags=["version"])
 
 
 @router.get('')
-def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+def list_versions(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Version, VersionName.name)
         .join(VersionName, Version.id == VersionName.version_id)
@@ -19,7 +19,7 @@ def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = De
 
 
 @router.get("/{version_id}")
-def get(version_id: int, language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+def get_version_by_id(version_id: int, language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Version, VersionName.name)
         .join(VersionName, Version.id == VersionName.version_id)

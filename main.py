@@ -7,14 +7,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from scalar_fastapi import get_scalar_api_reference
+from starlette.responses import HTMLResponse
 from router import language, gen, version, versionGroup, ability, pokemon, game
 
 
 async def run_database_migrations():
     """Run database migrations by calling alembic."""
     try:
-        db_dir = os.path.join(os.path.dirname(__file__), "src", "db")
-        subprocess.run(["alembic", "upgrade", "head"], check=True, cwd=db_dir)
+        subprocess.run(["alembic", "upgrade", "head"], check=True)
     except subprocess.CalledProcessError as e:
         # logger.error(f"Failed to run database migrations: {e}")
         raise
@@ -47,6 +48,13 @@ api.add_middleware(
 @api.get("/", include_in_schema=False)
 async def index() -> str:
     return "Hello Pokemonle"
+
+@api.get("/scalar", include_in_schema=False)
+async def scalar_html() -> HTMLResponse:
+    return get_scalar_api_reference(
+        openapi_url=api.openapi_url,
+        title=api.title,
+    )
 
 
 class SPAStaticFiles(StaticFiles):

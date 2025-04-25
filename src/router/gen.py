@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from db.database import get_db
 from db.model import Generation, GenerationName
 
-router = APIRouter(prefix="/gen", tags=["gen"])
+router = APIRouter(prefix="/gen", tags=["generation"])
 
 
 @router.get('')

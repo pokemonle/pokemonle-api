@@ -9,7 +9,8 @@ router = APIRouter(prefix="/pokemon", tags=["pokemon"])
 
 
 @router.get('')
-def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+def list_pokemons(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+    """ List pokemons with basic info"""
     data = (
         db.query(Pokemon, PokemonSpeciesName.name)
         .join(PokemonSpecies, Pokemon.species_id == PokemonSpecies.id)
@@ -21,11 +22,12 @@ def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = De
 
 
 @router.get('/name')
-def get_name(
+def list_pokemon_local_names(
         lang: Annotated[int, Query(ge=1, le=12)] = 12,
         search: Annotated[str | None, Query(min_length=1)] = None,
         db: Session = Depends(get_db)
 ):
+    """ List pokemon local names only."""
     query = db.query(PokemonSpeciesName.name).filter(PokemonSpeciesName.local_language_id == lang)
     if search:
         query = query.filter(PokemonSpeciesName.name.like(f"%{search}%"))
@@ -34,8 +36,11 @@ def get_name(
 
 
 @router.get('/{pokemon_id}')
-def get_pokemon(pokemon_id: int, language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def get_pokemon_by_id(
+        pokemon_id: int,
+        language: int = Query(12, alias='lang', ge=1, le=12),
+        db: Session = Depends(get_db)
+):
     data = (
         db.query(Pokemon, PokemonSpeciesName.name)
         .join(PokemonSpecies, Pokemon.species_id == PokemonSpecies.id)
@@ -52,8 +57,9 @@ def get_pokemon(pokemon_id: int, language: int = Query(12, alias='lang', ge=1, l
 
 
 @router.get('/{pokemon_id}/stats')
-def get_pokemon_stats(pokemon_id: int, language: int = Query(12, alias='lang', ge=1, le=12)):
-    db = DBSession()
+def get_pokemon_stats(
+        pokemon_id: int, language: int = Query(12, alias='lang', ge=1, le=12),
+        db: Session = Depends(get_db)):
     data = (
         db.query(PokemonStat.base_stat, StatName.name)
         .join(StatName, PokemonStat.stat_id == StatName.stat_id)

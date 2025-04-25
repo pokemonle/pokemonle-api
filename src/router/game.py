@@ -13,11 +13,12 @@ router = APIRouter(prefix="/game", tags=["game"])
 
 
 @router.get('/init')
-def init(
+def init_game_answer(
         encode: Annotated[int, Query(alias="gen")],
         difficulty=0,
         db: Session = Depends(get_db)
 ):
+    """ Generate a random pokemon id for the game by difficulty and encode generation"""
     if difficulty == 0:
         gens = decode_gen(encode)
         pokemon_list = (

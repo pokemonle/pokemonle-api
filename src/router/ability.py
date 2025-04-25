@@ -8,7 +8,8 @@ router = APIRouter(prefix="/ability", tags=["ability"])
 
 
 @router.get('')
-def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+def list_abilities(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+    """ List abilities."""
     data = (
         db.query(Ability, AbilityName.name)
         .join(AbilityName, Ability.id == AbilityName.ability_id)
@@ -19,7 +20,7 @@ def index(language: int = Query(12, alias='lang', ge=1, le=12), db: Session = De
 
 
 @router.get('/{ability_id}')
-def get(ability_id: int, language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
+def get_ability(ability_id: int, language: int = Query(12, alias='lang', ge=1, le=12), db: Session = Depends(get_db)):
     data = (
         db.query(Ability, AbilityName.name)
         .join(AbilityName, Ability.id == AbilityName.ability_id)
