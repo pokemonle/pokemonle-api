@@ -22,6 +22,7 @@ async def run_database_migrations():
         # logger.error(f"Failed to run database migrations: {e}")
         raise
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     await run_database_migrations()
@@ -51,6 +52,7 @@ api.add_middleware(
 async def index() -> str:
     return "Hello Pokemonle"
 
+
 @api.get("/scalar", include_in_schema=False)
 async def scalar_html() -> HTMLResponse:
     return get_scalar_api_reference(
@@ -72,4 +74,4 @@ app.mount("/api", api)
 app.mount("/", SPAStaticFiles(directory="dist", html=True), name="static")
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=settings.PORT)
+    uvicorn.run(api if settings.API_ONLY else app, host="0.0.0.0", port=settings.PORT)

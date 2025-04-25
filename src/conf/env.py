@@ -24,5 +24,10 @@ class Settings(BaseSettings):
         description="Port for the application"
     )
 
+    API_ONLY: bool = Field(
+        default=False,
+        description="API only mode"
+    )
+
 
 settings = Settings()
