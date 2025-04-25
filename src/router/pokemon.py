@@ -24,14 +24,15 @@ def list_pokemons(language: int = Query(12, alias='lang', ge=1, le=12), db: Sess
 @router.get('/name')
 def list_pokemon_local_names(
         lang: Annotated[int, Query(ge=1, le=12)] = 12,
-        search: Annotated[str | None, Query(min_length=1)] = None,
+        search: Annotated[str | None, Query()] = None,
+        limit :Annotated[int, Query(ge=1)] = 50,
         db: Session = Depends(get_db)
 ):
     """ List pokemon local names only."""
-    query = db.query(PokemonSpeciesName.name).filter(PokemonSpeciesName.local_language_id == lang)
+    query = db.query(PokemonSpeciesName).filter(PokemonSpeciesName.local_language_id == lang)
     if search:
         query = query.filter(PokemonSpeciesName.name.like(f"%{search}%"))
-    data = [row[0] for row in query.all()]
+    data = [row.to_dict() for row in query.limit(limit).all()]
     return JSONResponse(content=data)
 
 
