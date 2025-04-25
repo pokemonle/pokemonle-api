@@ -64,7 +64,6 @@ def upgrade() -> None:
             }
             for row in csv_data
         ]
-        print(data)
         op.bulk_insert(generations, data)
 
 
@@ -80,7 +79,6 @@ def upgrade() -> None:
             }
             for row in csv_data
         ]
-        print(data)
         op.bulk_insert(languages, data)
 
     with load_csv("generation_names") as csv_data:
