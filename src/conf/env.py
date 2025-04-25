@@ -19,5 +19,10 @@ class Settings(BaseSettings):
         description="Database connection string"
     )
 
+    PORT: int = Field(
+        default=9000,
+        description="Port for the application"
+    )
+
 
 settings = Settings()

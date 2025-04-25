@@ -11,6 +11,8 @@ from scalar_fastapi import get_scalar_api_reference
 from starlette.responses import HTMLResponse
 from router import language, gen, version, versionGroup, ability, pokemon, game
 
+from conf.env import settings
+
 
 async def run_database_migrations():
     """Run database migrations by calling alembic."""
@@ -70,4 +72,4 @@ app.mount("/api", api)
 app.mount("/", SPAStaticFiles(directory="dist", html=True), name="static")
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=9000)
+    uvicorn.run(app, host="0.0.0.0", port=settings.PORT)
