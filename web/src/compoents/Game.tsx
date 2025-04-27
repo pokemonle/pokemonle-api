@@ -21,10 +21,12 @@ export const Game = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center mt-4">
+      <div className="flex flex-col items-center m-4">
         <SearchBar value={selectedPokemon} onChange={handleSearchChange} />
-        <div id="button-group" className="flex mt-6 space-x-3">
-          {/* TODO */}
+        <div
+          id="button-group"
+          className="flex w-full mt-6 space-x-3 justify-center"
+        >
           <Button
             color="primary"
             className="w-32"
