@@ -41,9 +41,9 @@ export const ThemeSwitcher = () => {
   return (
     <div>
       <Switch
-        value={theme}
-        onChange={(e) => {
-          setTheme(e.target.checked ? "dark" : "light");
+        isSelected={theme === "dark"}
+        onValueChange={(e) => {
+          setTheme(e ? "dark" : "light");
         }}
         size="lg"
         thumbIcon={theme === "dark" ? <MoonIcon /> : <SunIcon />}
