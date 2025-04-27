@@ -16,7 +16,7 @@ export const Header = (props: HeaderProps) => {
           </span>
 
           <div className="flex items-center lg:order-2">
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <ThemeSwitcher />
               <SettingModal />
             </div>

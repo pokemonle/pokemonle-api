@@ -10,22 +10,25 @@ import {
   RadioGroup,
   Radio,
   useDisclosure,
+  Switch,
+  Slider,
 } from "@heroui/react";
-import { useEffect, useState } from "react";
-import { useGenerations } from "../hooks/useFetch";
+import { useEffect } from "react";
+import { useGenerationList } from "../hooks/useFetch";
+import useSettings from "../hooks/useSettings";
 
 export const SettingModal = () => {
+  const { settings, setSettingKey } = useSettings();
+
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const { data: generationList, mutate, isLoading } = useGenerations();
-  const [checkedValues, setCheckedValues] = useState<string[]>([]);
+  const { data: generationList, mutate } = useGenerationList();
 
-  const [encodeGeneration, setEncodeGeneration] = useState<number>(511);
-
-  useEffect(() => {
-    if (generationList) {
-      setCheckedValues(generationList.map((item) => item.identifier));
-    }
-  }, [isLoading, generationList]);
+  if (generationList && settings.checkedValues.length === 0) {
+    setSettingKey(
+      "checkedValues",
+      generationList.map((item) => item.identifier)
+    );
+  }
 
   // open modal lifecycle
   useEffect(() => {
@@ -47,21 +50,20 @@ export const SettingModal = () => {
                 Modal Title
               </ModalHeader>
               <ModalBody>
-                {encodeGeneration}
-                <RadioGroup orientation="horizontal">
+                <RadioGroup isDisabled orientation="horizontal">
                   {["easy", "normal", "hard"].map((item, index) => (
                     <Radio value={item} key={index}>
                       {item}
                     </Radio>
                   ))}
                 </RadioGroup>
-
+                <div className="w-full border-t border-gray-300 my-1/2" />
                 <CheckboxGroup
                   orientation="horizontal"
-                  value={checkedValues}
+                  value={settings.checkedValues}
                   onValueChange={(newValues) => {
                     if (newValues.length > 0) {
-                      setCheckedValues(newValues);
+                      setSettingKey("checkedValues", newValues);
                     }
                   }}
                 >
@@ -73,9 +75,9 @@ export const SettingModal = () => {
                           className="capitalize"
                           onChange={() => {
                             const newValue =
-                              encodeGeneration ^ (1 << (item.id - 1));
+                              settings.encodeGeneration ^ (1 << (item.id - 1));
                             if (newValue !== 0) {
-                              setEncodeGeneration(newValue);
+                              setSettingKey("encodeGeneration", newValue);
                             }
                           }}
                         >
@@ -84,15 +86,49 @@ export const SettingModal = () => {
                       ))
                     : []}
                 </CheckboxGroup>
-                {/* TODO */}
-                <p>
-                  Magna exercitation reprehenderit magna aute tempor cupidatat
-                  consequat elit dolor adipisicing. Mollit dolor eiusmod sunt ex
-                  incididunt cillum quis. Velit duis sit officia eiusmod Lorem
-                  aliqua enim laboris do dolor eiusmod. Et mollit incididunt
-                  nisi consectetur esse laborum eiusmod pariatur proident Lorem
-                  eiusmod et. Culpa deserunt nostrud ad veniam.
-                </p>
+                <div className="w-full border-t border-gray-300 my-1/2" />
+                <p className="font-bold">显示信息</p>
+                <div className="flex flex-col gap-2">
+                  <Switch
+                    size="sm"
+                    isSelected={settings.stats}
+                    onValueChange={(val) => {
+                      setSettingKey("stats", val);
+                    }}
+                  >
+                    更多种族值信息
+                  </Switch>
+                  <Switch
+                    size="sm"
+                    isSelected={settings.shape}
+                    onValueChange={(val) => {
+                      setSettingKey("shape", val);
+                    }}
+                  >
+                    更多外形信息
+                  </Switch>
+                  <Switch
+                    size="sm"
+                    isSelected={settings.eggGroup}
+                    onValueChange={(val) => {
+                      setSettingKey("eggGroup", val);
+                    }}
+                  >
+                    蛋组/捕获率
+                  </Switch>
+                </div>
+                <div className="w-full border-t border-gray-300 my-1/2" />
+                <p className="font-bold">猜测次数: {settings.chance}</p>
+                <Slider
+                  value={settings.chance}
+                  aria-label="Chance"
+                  onChange={(val) => {
+                    // value must be number
+                    setSettingKey("chance", val as number);
+                  }}
+                  minValue={1}
+                  maxValue={25}
+                />
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>

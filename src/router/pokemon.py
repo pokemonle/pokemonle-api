@@ -25,15 +25,41 @@ def list_pokemons(language: int = Query(12, alias='lang', ge=1, le=12), db: Sess
 def list_pokemon_local_names(
         lang: Annotated[int, Query(ge=1, le=12)] = 12,
         search: Annotated[str | None, Query()] = None,
-        limit :Annotated[int, Query(ge=1)] = 50,
+        # limit: Annotated[int, Query(ge=1)] = 50,
+        generation_ids: Annotated[list[int] | None, Query(alias='gen')] = None,
         db: Session = Depends(get_db)
 ):
     """ List pokemon local names only."""
-    query = db.query(PokemonSpeciesName).filter(PokemonSpeciesName.local_language_id == lang)
+    query = (
+        db.query(PokemonSpeciesName, PokemonSpecies.generation_id)
+        .join(PokemonSpecies, PokemonSpecies.id == PokemonSpeciesName.pokemon_species_id)
+        .filter(PokemonSpeciesName.local_language_id == lang)
+    )
     if search:
         query = query.filter(PokemonSpeciesName.name.like(f"%{search}%"))
-    data = [row.to_dict() for row in query.limit(limit).all()]
+    if generation_ids:
+        query = query.filter(PokemonSpecies.generation_id.in_(generation_ids))
+    # Limit the number of results
+    # query = query.limit(limit)
+
+    data = [{**row.to_dict(), "generation_id": gen_id} for row, gen_id in query.all()]
     return JSONResponse(content=data)
+
+
+@router.get("/ids")
+def list_pokemon_by_generation_ids(
+        generation_ids: Annotated[list[int] | None, Query(alias='gen')] = None,
+        db: Session = Depends(get_db)
+) -> JSONResponse:
+    """ List pokemons by generation ids"""
+    if generation_ids is None:
+        return JSONResponse(content=[])
+    data = (
+        db.query(PokemonSpecies)
+        .filter(PokemonSpecies.generation_id.in_(generation_ids))
+        .all()
+    )
+    return JSONResponse(content=[g.id for g in data])
 
 
 @router.get('/{pokemon_id}')

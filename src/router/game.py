@@ -15,7 +15,7 @@ router = APIRouter(prefix="/game", tags=["game"])
 @router.get('/init')
 def init_game_answer(
         encode: Annotated[int, Query(alias="gen")],
-        difficulty=0,
+        difficulty: int = 0,
         db: Session = Depends(get_db)
 ):
     """ Generate a random pokemon id for the game by difficulty and encode generation"""
@@ -37,7 +37,7 @@ def init_game_answer(
 @router.get('/guess')
 def check_answer(
         answer: int,
-        guess: str,
+        guess: int,
         lang: Annotated[int, Query(ge=1, le=12)] = 12,
         db: Session = Depends(get_db)
 ):
@@ -45,12 +45,12 @@ def check_answer(
     guess_pokemon_name = (
         db.query(PokemonSpeciesName)
         .filter(PokemonSpeciesName.local_language_id == lang)
-        .filter(PokemonSpeciesName.name == guess)
+        .filter(PokemonSpeciesName.pokemon_species_id == guess)
         .first()
     )
 
     if guess_pokemon_name is None:
-        return JSONResponse(content={"error": f"Guess Pokemon {guess} not found"}, status_code=404)
+        return JSONResponse(content={"error": f"Guess Pokemon ID {guess} not found"}, status_code=404)
 
     (guess_pokemon, answer_pokemon) = (
         db.query(PokemonSpecies)

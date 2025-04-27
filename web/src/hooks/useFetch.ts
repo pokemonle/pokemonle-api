@@ -1,17 +1,16 @@
-import client from "../utils/axios";
+import { fetcher } from "../utils/axios";
 import useSWR from "swr";
 
-const fetcher = (url: string, params: unknown = {}) => {
-  return client
-    .get(url, {
-      params,
-    })
-    .then((res) => res.data);
-};
-
-export const usePokemonName = (search?: string) =>
-  useSWR<PokemonName[]>(["/pokemon/name", search], ([url, search]) =>
-    fetcher(url, { search })
+export const usePokemonName = (genIDs: Array<number>, search?: string) =>
+  useSWR<PokemonName[]>(
+    ["/pokemon/name", search, genIDs],
+    ([url, search, gen]) => fetcher(url, { search, gen })
   );
 
-export const useGenerations = () => useSWR<GenerationName[]>("/gen", fetcher);
+export const usePokemonIDByGeneration = (generations: Array<number>) =>
+  useSWR<number[]>(["/pokemon/ids", generations], ([url, gens]) =>
+    fetcher(url, { gen: gens })
+  );
+
+export const useGenerationList = () =>
+  useSWR<GenerationName[]>("/gen", fetcher);
