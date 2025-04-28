@@ -11,9 +11,9 @@ const instance = axios.create({
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
 
-export const fetcher = (url: string, params: unknown = {}) => {
+export const fetcher = <T = unknown>(url: string, params: unknown = {}) => {
   return instance
-    .get(url, {
+    .get<T>(url, {
       params,
     })
     .then((res) => res.data);

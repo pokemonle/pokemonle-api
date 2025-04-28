@@ -31,6 +31,7 @@ export const SearchBar = (props: SerachBarProps) => {
       <Autocomplete
         className="flex-1 sm:max-w-md"
         items={data ?? []}
+        size="md"
         label="Select a pokemon"
         placeholder="Type to search..."
         variant="bordered"

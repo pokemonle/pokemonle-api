@@ -35,6 +35,7 @@ def compare_pokemon(
         "col": color(**options),
         "catrate": {"key": rate["key"], "value": rate["value"]},
         "evo": evolution(**options),
+        "stat": stat(**options),
         **stat(**options),
     }
 
