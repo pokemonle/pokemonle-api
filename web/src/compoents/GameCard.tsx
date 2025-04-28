@@ -107,7 +107,7 @@ const GameCard = (props: GameCardProps) => {
 
       case "ability":
         return (
-          <div className="flex flex-col space-y-1">
+          <div className="flex flex-col w-full space-y-1">
             {item.ability.map((a, index) => {
               return (
                 <Chip
@@ -166,7 +166,7 @@ const GameCard = (props: GameCardProps) => {
       <Table aria-label="pokemon compare table">
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.key} className="capitalize">
+            <TableColumn key={column.key} align="center" className="capitalize">
               {column.label}
             </TableColumn>
           )}
@@ -175,7 +175,9 @@ const GameCard = (props: GameCardProps) => {
           {(item) => (
             <TableRow key={item.index}>
               {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
+                <TableCell align="center">
+                  {renderCell(item, columnKey)}
+                </TableCell>
               )}
             </TableRow>
           )}
