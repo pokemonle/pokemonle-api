@@ -1,19 +1,9 @@
-FROM node:20-alpine AS node
-
-WORKDIR /app
-ADD web /app
-
-RUN npm install && npm run build
-
 FROM scratch as file
 # Use a minimal base image
 WORKDIR /app
 ADD main.py pyproject.toml uv.lock README.md alembic.ini /app
 ADD src /app/src
 ADD migration /app/migration
-
-# Copy the web build from the node stage
-COPY --from=node /app/dist /app/dist
 
 # Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS api
