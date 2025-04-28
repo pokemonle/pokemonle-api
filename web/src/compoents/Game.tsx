@@ -12,15 +12,25 @@ export const Game = () => {
   const [answer, setAnswer] = useState<number | undefined>(undefined);
   const [isFinished, setFinished] = useState(false);
   const [compareList, setCompareList] = useState<Array<GameGuessData>>([]);
+  const [restartCount, setRestartCount] = useState(0);
 
   const { data: encodeGeneration } = useEncodeGeneration();
 
   useEffect(() => {
     GameInit(encodeGeneration).then(setAnswer);
-  }, [encodeGeneration]);
+  }, [encodeGeneration, restartCount]);
 
   const handleSearchChange = (value: string) => {
     setSelectedPokemon(value);
+  };
+
+  const handleRestart = () => {
+    setFinished(false);
+    setCompareList([]);
+    setSelectedPokemon(undefined);
+    setAnswer(undefined);
+
+    setRestartCount((prev) => prev + 1);
   };
 
   return (
@@ -37,7 +47,8 @@ export const Game = () => {
             isDisabled={!selectedPokemon || isFinished}
             onPress={() => {
               if (answer && selectedPokemon) {
-                GameGuess(answer, selectedPokemon ?? "").then((res) => {
+                const selectIndex: number = parseInt(selectedPokemon);
+                GameGuess(answer, selectIndex).then((res) => {
                   console.log(res);
                   if (res.index === answer) {
                     setFinished(true);
@@ -55,21 +66,31 @@ export const Game = () => {
           >
             提交
           </Button>
-          <Button color="danger" className="w-32">
+          <Button
+            isDisabled={isFinished}
+            color="danger"
+            className="w-32"
+            onPress={() => {
+              if (answer) {
+                GameGuess(answer, answer).then((res) => {
+                  console.log(res);
+                  if (res.index === answer) {
+                    setFinished(true);
+                    addToast({
+                      title: "已投降！",
+                      description: "胜败乃兵家常事,请重新来过！",
+                      color: "warning",
+                      timeout: 2000,
+                    });
+                  }
+                  setCompareList((prev) => [...prev, res]);
+                });
+              }
+            }}
+          >
             投降
           </Button>
-          <Button
-            color="success"
-            onPress={() => {
-              addToast({
-                title: "恭喜你！",
-                description: "你猜对了！",
-                color: "success",
-                timeout: 2000,
-              });
-            }}
-            className="w-32"
-          >
+          <Button color="success" onPress={handleRestart} className="w-32">
             重开
           </Button>
         </div>
