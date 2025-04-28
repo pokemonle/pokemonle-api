@@ -17,9 +17,9 @@ interface GameCardProps {
 const columns = [
   { key: "index", label: "宝可梦" },
   { key: "type", label: "属性" },
-  { key: "gen", label: "Generation" },
-  { key: "ability", label: "Ability" },
-  { key: "stat", label: "Stats" },
+  { key: "gen", label: "世代" },
+  { key: "ability", label: "特性" },
+  { key: "stat", label: "种族值" },
 ];
 
 const UpArrow = () => (
@@ -77,14 +77,14 @@ const GameCard = (props: GameCardProps) => {
       case "index":
         return (
           <User
-            name={item.name}
+            name={<p className="w-20">{item.name}</p>}
             avatarProps={{
               radius: "lg",
               size: "lg",
               src: `https://pokeimg.oss-cn-beijing.aliyuncs.com/pokemon_images/${item.index}.webp`,
             }}
           >
-            {item.name}
+            <p className="w-20">{item.name}</p>
           </User>
         );
       case "type":

@@ -18,7 +18,6 @@ COPY --from=node /app/dist /app/dist
 # Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS api
 
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/*
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpq-dev \
