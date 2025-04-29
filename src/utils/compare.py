@@ -2,7 +2,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, aliased
 
 from core.pokemon import PokemonDataStats
-from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, GenerationName, \
+from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, Generation, \
     PokemonAbility, Ability, PokemonType, Type, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
     PokemonEvolution, EvolutionTriggerProse, PokemonColor
 
@@ -31,7 +31,7 @@ def compare_pokemon(
         "type": _type(**options),
         "ability": ability(**options),
         "egg": egg(**options),
-        "gen": generation(**options),
+        "gen": generation(db, found, target),
         "color": color(db, found, target),
         "capture_rate": {"key": rate["key"], "value": rate["value"]},
         "evo": evolution(**options),
@@ -63,15 +63,13 @@ def color(
 def generation(
         db: Session,
         found: PokemonSpecies, target: PokemonSpecies,
-        lang: int,
 ) -> dict[str, bool]:
     gen = (
-        db.query(GenerationName)
-        .filter(GenerationName.local_language_id == lang)
-        .filter(GenerationName.generation_id == found.generation_id)
+        db.query(Generation)
+        .filter(Generation.id == found.generation_id)
         .first()
     )
-    return {"key": gen.name, **distance(found.generation_id, target.generation_id, 1)} if gen else {}
+    return {"identifier": gen.identifier, **distance(found.generation_id, target.generation_id, 1)} if gen else {}
 
 
 def ability(
