@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, aliased
 from core.pokemon import PokemonDataStats
 from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, GenerationName, \
     PokemonAbility, AbilityName, PokemonType, Type, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
-    PokemonEvolution, EvolutionTriggerProse
+    PokemonEvolution, EvolutionTriggerProse, PokemonColor
 
 ATTACK = 2
 DEFENSE = 3
@@ -32,7 +32,7 @@ def compare_pokemon(
         "ability": ability(**options),
         "egg": egg(**options),
         "gen": generation(**options),
-        "color": color(found, target),
+        "color": color(db, found, target),
         "capture_rate": {"key": rate["key"], "value": rate["value"]},
         "evo": evolution(**options),
         "stat": stat(**options),
@@ -43,9 +43,21 @@ def compare_pokemon(
 
 
 def color(
+        db: Session,
         found: PokemonSpecies, target: PokemonSpecies,
 ):
-    return {"key": found.color_id, "value": found.color_id == target.color_id}
+    col = (
+        db.query(PokemonColor).filter(PokemonColor.id == found.color_id).first()
+    )
+
+    if col:
+        return {
+            "key": col.identifier,
+            "value": found.color_id == target.color_id,
+            "id": found.color_id
+        }
+
+    return {}
 
 
 def generation(
@@ -85,7 +97,7 @@ def ability(
         .all()
     )
 
-    return [{"key": name, "value": value} for ability_id, value, name in found_abilities]
+    return [{"key": name, "value": value, "id": ability_id} for ability_id, value, name in found_abilities]
 
 
 def _type(
@@ -110,7 +122,7 @@ def _type(
         .all()
     )
 
-    return [{"key": name, "value": value} for type_id, value, name in found_types]
+    return [{"key": name, "value": value, "id": type_id} for type_id, value, name in found_types]
 
 
 def egg(
