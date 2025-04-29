@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, aliased
 
 from core.pokemon import PokemonDataStats
 from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, GenerationName, \
-    PokemonAbility, AbilityName, PokemonType, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
+    PokemonAbility, AbilityName, PokemonType, Type, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
     PokemonEvolution, EvolutionTriggerProse
 
 ATTACK = 2
@@ -32,7 +32,7 @@ def compare_pokemon(
         "ability": ability(**options),
         "egg": egg(**options),
         "gen": generation(**options),
-        "color": color(**options),
+        "color": color(found, target),
         "capture_rate": {"key": rate["key"], "value": rate["value"]},
         "evo": evolution(**options),
         "stat": stat(**options),
@@ -43,18 +43,9 @@ def compare_pokemon(
 
 
 def color(
-        db: Session,
         found: PokemonSpecies, target: PokemonSpecies,
-        lang: int,
 ):
-    col = (
-        db.query(PokemonColorName)
-        .filter(PokemonColorName.local_language_id == lang)
-        .filter(PokemonColorName.pokemon_color_id == found.color_id)
-        .first()
-    )
-
-    return {"key": col.name, "value": found.color_id == target.color_id} if col else None
+    return {"key": found.color_id, "value": found.color_id == target.color_id}
 
 
 def generation(
@@ -111,10 +102,9 @@ def _type(
             .filter(tpt.type_id == PokemonType.type_id)
             .exists()
             .label("value"),
-            TypeName.name,
+            Type.identifier,
         )
-        .join(TypeName, PokemonType.type_id == TypeName.type_id)
-        .filter(TypeName.local_language_id == lang)
+        .join(Type, PokemonType.type_id == Type.id)
         .filter(PokemonType.pokemon_id == found.id)
         # .distinct()
         .all()
