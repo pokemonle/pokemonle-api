@@ -32,11 +32,11 @@ def compare_pokemon(
         "ability": ability(**options),
         "egg": egg(**options),
         "gen": generation(**options),
-        "col": color(**options),
-        "catrate": {"key": rate["key"], "value": rate["value"]},
+        "color": color(**options),
+        "capture_rate": {"key": rate["key"], "value": rate["value"]},
         "evo": evolution(**options),
         "stat": stat(**options),
-        **stat(**options),
+        # **stat(**options),
     }
 
     return result
