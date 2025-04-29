@@ -71,7 +71,7 @@ def check_answer(
 
     return {
         **compare_pokemon(db, guess_pokemon, answer_pokemon, lang),
-        "name": guess_pokemon_name.name,
+        "identifier": guess_pokemon.identifier,
         "index": guess_pokemon.id,
     }
 
