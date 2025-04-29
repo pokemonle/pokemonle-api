@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, aliased
 
 from core.pokemon import PokemonDataStats
 from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, GenerationName, \
-    PokemonAbility, AbilityName, PokemonType, Type, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
+    PokemonAbility, Ability, PokemonType, Type, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
     PokemonEvolution, EvolutionTriggerProse, PokemonColor
 
 ATTACK = 2
@@ -88,10 +88,9 @@ def ability(
             .filter(tpa.ability_id == PokemonAbility.ability_id)
             .exists()
             .label("value"),
-            AbilityName.name,
+            Ability.identifier,
         )
-        .join(AbilityName, PokemonAbility.ability_id == AbilityName.ability_id)
-        .filter(AbilityName.local_language_id == lang)
+        .join(Ability, PokemonAbility.ability_id == Ability.id)
         .filter(PokemonAbility.pokemon_id == found.id)
         # .distinct()
         .all()

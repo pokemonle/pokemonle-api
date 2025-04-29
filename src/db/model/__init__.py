@@ -31,6 +31,7 @@ __all__ = [
     # "Type",
     # "TypeName"
     # "Ability",
+    "Item", "ItemName", "ItemPocket", "ItemPocketName",
     "Stat", "StatName",
     "Pokemon",
     "PokemonSpecies",
