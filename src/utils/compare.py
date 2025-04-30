@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, aliased
 
 from core.pokemon import PokemonDataStats
 from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, Generation, \
-    PokemonAbility, Ability, PokemonType, Type, TypeName, PokemonEggGroup, EggGroupProse, PokemonStat, StatName, \
+    PokemonAbility, Ability, PokemonType, Type, TypeName, PokemonEggGroup, EggGroup, PokemonStat, StatName, \
     PokemonEvolution, EvolutionTriggerProse, PokemonColor
 
 ATTACK = 2
@@ -30,12 +30,14 @@ def compare_pokemon(
         "answer": found.id == target.id,
         "type": _type(**options),
         "ability": ability(**options),
-        "egg": egg(**options),
         "gen": generation(db, found, target),
         "color": color(db, found, target),
-        "capture_rate": {"key": rate["key"], "value": rate["value"]},
         "evo": evolution(**options),
         "stat": stat(**options),
+        "breeding": {
+            "egg_group": egg(**options),
+            "capture_rate": {"key": rate["key"], "value": rate["value"]},
+        }
         # **stat(**options),
     }
 
@@ -136,10 +138,10 @@ def egg(
             .filter(tpe.egg_group_id == PokemonEggGroup.egg_group_id)
             .exists()
             .label("value"),
-            EggGroupProse.name,
+            EggGroup.identifier,
         )
-        .join(EggGroupProse, PokemonEggGroup.egg_group_id == EggGroupProse.egg_group_id)
-        .filter(EggGroupProse.local_language_id == lang)
+        .join(EggGroup, PokemonEggGroup.egg_group_id == EggGroup.id)
+
         .filter(PokemonEggGroup.species_id == found.id)
         # .distinct()
         .all()
@@ -167,7 +169,7 @@ def evolution(
         .join(EvolutionTriggerProse,
               PokemonEvolution.evolution_trigger_id == EvolutionTriggerProse.evolution_trigger_id)  # type: ignore
         .filter(EvolutionTriggerProse.local_language_id == lang)
-        .filter(PokemonEvolution.evolved_species_id == found.id)
+        # .filter(PokemonEvolution.evolved_species_id == found.id)
         .first()
     )
 
@@ -186,16 +188,6 @@ def stat(
 
     return {
         "pow": {"key": found.id, **distance(found_stats.total(), target_stats.total(), 50)},
-        "speed": {"key": found_stats.speed, **distance(found_stats.speed, target_stats.speed, 10)},
-        "attack": {"key": stat_distance(found_stats.attack, found_stats.special_attack, stat_lang[ATTACK],
-                                        stat_lang[SPECIAL_ATTACK]),
-                   "value": (found_stats.attack > found_stats.special_attack) == (
-                           found_stats.attack > target_stats.special_attack)},
-        "defense": {"key": stat_distance(found_stats.defense, found_stats.special_defense, stat_lang[DEFENSE],
-                                         stat_lang[SPECIAL_DEFENSE]),
-                    "value": (found_stats.defense > found_stats.special_defense) == (
-                            found_stats.defense > target_stats.special_defense)
-                    },
     }
 
 
@@ -238,11 +230,3 @@ def distance(found: int, target: int, near: int | None) -> dict:
             "dis": "far" if abs(found - target) > near else "near"
         }
 
-
-def stat_distance(l: int, r: int, l_str: int, r_str: int) -> str:
-    if l == r:
-        return f"{l_str}={r_str}"
-    elif l > r:
-        return f"{l_str}>{r_str}"
-    else:
-        return f"{l_str}<{r_str}"
