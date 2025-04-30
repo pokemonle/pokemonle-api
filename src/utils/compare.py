@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, aliased
 from core.pokemon import PokemonDataStats
 from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, Generation, \
     PokemonAbility, Ability, PokemonType, Type, TypeName, PokemonEggGroup, EggGroup, PokemonStat, StatName, \
-    PokemonEvolution, EvolutionTriggerProse, PokemonColor
+    PokemonEvolution, EvolutionTrigger, PokemonColor
 
 ATTACK = 2
 DEFENSE = 3
@@ -164,16 +164,18 @@ def evolution(
             .filter(tpe.id == PokemonEvolution.id)
             .exists()
             .label("value"),
-            EvolutionTriggerProse.name,
+            EvolutionTrigger.identifier,
         )
-        .join(EvolutionTriggerProse,
-              PokemonEvolution.evolution_trigger_id == EvolutionTriggerProse.evolution_trigger_id)  # type: ignore
-        .filter(EvolutionTriggerProse.local_language_id == lang)
-        # .filter(PokemonEvolution.evolved_species_id == found.id)
+        .join(EvolutionTrigger,
+              PokemonEvolution.evolution_trigger_id == EvolutionTrigger.id)  # type: ignore
+        # .filter(EvolutionTriggerProse.local_language_id == lang)
+        .filter(PokemonEvolution.evolved_species_id == found.id)
         .first()
     )
 
-    return {"key": found_evo.name, "value": found_evo.value} if found_evo else None
+    print(found_evo)
+
+    return {"key": found_evo[2], "value": found_evo[1]} if found_evo else None
 
 
 def stat(
