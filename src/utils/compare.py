@@ -1,9 +1,8 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session, aliased
 
-from core.pokemon import PokemonDataStats
-from db.model import Pokemon, PokemonSpecies, PokemonSpeciesName, PokemonColorName, PokemonHabitatName, Generation, \
-    PokemonAbility, Ability, PokemonType, Type, TypeName, PokemonEggGroup, EggGroup, PokemonStat, StatName, \
+from db.model import Pokemon, PokemonSpecies, Generation, \
+    PokemonAbility, Ability, PokemonType, Type, PokemonEggGroup, EggGroup, PokemonStat, StatName, \
     PokemonEvolution, EvolutionTrigger, PokemonColor
 
 ATTACK = 2
@@ -183,19 +182,26 @@ def stat(
         found: PokemonSpecies, target: PokemonSpecies,
         lang: int,
 ) -> dict:
-    found_stats = get_stats(db, found.id)
-    target_stats = get_stats(db, target.id)
+    f_stats = get_stats(db, found.id)
+    t_stats = get_stats(db, target.id)
 
-    stat_lang = get_stat_lang(db, lang)
+    f_total = sum([s["base_stat"] for s in f_stats])
+    t_total = sum([s["base_stat"] for s in t_stats])
 
     return {
-        "pow": {"key": found.id, **distance(found_stats.total(), target_stats.total(), 50)},
+        "pow": {"key": found.id, **distance(f_total, t_total, 50)},
+        "detail": [
+            {
+                **distance(stat["base_stat"], t_stats[i]["base_stat"], 10)
+            }
+            for i, stat in enumerate(f_stats)
+        ]
     }
 
 
 def get_stats(
         db: Session, pokemon_id: int
-) -> PokemonDataStats | None:
+) -> list[dict]:
     stats = (
         db.query(PokemonStat)
         .filter(PokemonStat.pokemon_id == pokemon_id)
@@ -203,16 +209,7 @@ def get_stats(
         .all()
     )
 
-    if stats is None or len(stats) != 6:
-        return None
-    return PokemonDataStats(
-        stats[0].base_stat,
-        stats[1].base_stat,
-        stats[2].base_stat,
-        stats[3].base_stat,
-        stats[4].base_stat,
-        stats[5].base_stat,
-    )
+    return [s.to_dict() for s in stats]
 
 
 def get_stat_lang(db: Session, lang: int):
@@ -231,4 +228,3 @@ def distance(found: int, target: int, near: int | None) -> dict:
             "value": "high" if found < target else "low",
             "dis": "far" if abs(found - target) > near else "near"
         }
-
