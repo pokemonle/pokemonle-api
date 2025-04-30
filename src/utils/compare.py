@@ -2,7 +2,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, aliased
 
 from db.model import Pokemon, PokemonSpecies, Generation, \
-    PokemonAbility, Ability, PokemonType, Type, PokemonEggGroup, EggGroup, PokemonStat, StatName, \
+    PokemonAbility, Ability, PokemonType, Type, PokemonEggGroup, EggGroup, PokemonStat, Stat, \
     PokemonEvolution, EvolutionTrigger, PokemonColor
 
 ATTACK = 2
@@ -172,8 +172,6 @@ def evolution(
         .first()
     )
 
-    print(found_evo)
-
     return {"key": found_evo[2], "value": found_evo[1]} if found_evo else None
 
 
@@ -192,6 +190,7 @@ def stat(
         "pow": {"key": found.id, **distance(f_total, t_total, 50)},
         "detail": [
             {
+                "identifier": stat["identifier"],
                 **distance(stat["base_stat"], t_stats[i]["base_stat"], 10)
             }
             for i, stat in enumerate(f_stats)
@@ -203,20 +202,14 @@ def get_stats(
         db: Session, pokemon_id: int
 ) -> list[dict]:
     stats = (
-        db.query(PokemonStat)
+        db.query(PokemonStat, Stat.identifier)
+        .join(Stat, PokemonStat.stat_id == Stat.id)
         .filter(PokemonStat.pokemon_id == pokemon_id)
         .order_by(PokemonStat.stat_id)
         .all()
     )
 
-    return [s.to_dict() for s in stats]
-
-
-def get_stat_lang(db: Session, lang: int):
-    data = db.query(StatName).filter(StatName.local_language_id == lang).all()
-
-    # data list to dict stat_id -> name
-    return {d.stat_id: d.name for d in data}
+    return [{"identifier": i, **s.to_dict()} for s, i in stats]
 
 
 def distance(found: int, target: int, near: int | None) -> dict:
